@@ -1,0 +1,256 @@
+---
+title: "week_36"
+author: "Maxwel Coura Oliveira"
+date: "9/12/2020"
+output: html_document
+---
+
+```{r include=FALSE}
+library(hrbrthemes)
+library(viridis)
+library(tidyverse)
+library(waffle)
+library(magrittr)
+library(extrafont)
+library(ggtext)
+library(hrbrthemes)
+library(colorspace)
+library(calecopal)
+```
+
+
+```{r}
+#install.packages("tidytuesdayR")
+```
+
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2020-09-01')
+```
+
+
+```{r}
+key_crop_yields <- tuesdata$key_crop_yields
+
+#unique(key_crop_yields$Entity)
+```
+
+# Continent
+```{r message=FALSE}
+df <- tuesdata$key_crop_yields %>% 
+  filter(Entity == "Brazil") %>% 
+  rename(Wheat = `Wheat (tonnes per hectare)`,
+         Rice = `Rice (tonnes per hectare)`,
+         Maize = `Maize (tonnes per hectare)`,
+         Soybeans = `Soybeans (tonnes per hectare)`,
+         Potatoes = `Potatoes (tonnes per hectare)`,
+         Beans = `Beans (tonnes per hectare)`,
+         Peas = `Peas (tonnes per hectare)`,
+         Barley = `Barley (tonnes per hectare)`,
+         `Cocoa beans` = `Cocoa beans (tonnes per hectare)`,
+         Cassava = `Cassava (tonnes per hectare)`,
+         Bananas = `Bananas (tonnes per hectare)`) %>% 
+  pivot_longer(cols= Wheat:Bananas, names_to = 'Crops', values_to= 'yield')
+```
+
+
+```{r message=FALSE, warning=FALSE}
+df %>% 
+  ggplot(aes(x=Year, y= yield, fill=Crops)) +
+  geom_area(alpha=0.6,size=0.5, color="black") +
+  theme_bw() + scale_fill_hue(name="Crops") +
+  theme_tinyhand() +
+  scale_x_continuous(breaks=seq(1960,2020,5)) +
+  
+  #saving the plot
+ggsave("BRA_plot.png", height=6, width=9, device="png",dpi=600)
+```
+
+
+------------------------------------------------------------------------------------------------
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidytuesdayR)
+library(tidyverse)
+library(scales)
+library(janitor)
+library(lubridate)
+```
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2020-09-01')
+tuesdata
+crop_yields <- tuesdata$key_crop_yields %>% 
+  clean_names()
+```
+
+```{r}
+view(crop_yields)
+#249 entities
+crop_yields %>% 
+  distinct(entity)
+#1969 - 2018
+crop_yields %>% 
+  count(year)
+crop_yields %>% 
+  summarise(across(everything(), ~mean(!is.na(.))))
+```
+
+
+
+```{r}
+crop_yields_tidy <- crop_yields %>%
+  pivot_longer(cols = ends_with("hectare"), names_to = "crop", values_to = "yield") %>% 
+  mutate(crop = str_remove(crop, '_.*$')) %>% 
+  filter(!is.na(yield),
+         crop != "beans")
+crop_yields_tidy
+#capitalize the first letter for each value in the crop column
+str_sub(crop_yields_tidy$crop, 1, 1) <- str_sub(crop_yields_tidy$crop, 1, 1) %>% str_to_upper()
+theme_set(theme_minimal())
+bar <- crop_yields_tidy %>% 
+  mutate(decade = 10 * floor((year) / 10)) %>% 
+  group_by(decade, crop) %>%
+  summarise(mean_yield = mean(yield)) %>% 
+  mutate(crop = fct_reorder(crop, -mean_yield)) %>% 
+  arrange(decade, desc(mean_yield)) %>% 
+  ggplot(aes(decade, mean_yield, color = crop))+
+  geom_line()+
+  geom_point()+
+  facet_wrap(~crop, scales = "free_y", nrow = 2) +
+  labs(title ="Global Crop Yields",
+       subtitle ="Average Tonnes per Hectare",
+       x ="",
+       y ="",
+       caption ="Data: Our World in Data | Visualization: Eric Fletcher")+
+  theme(plot.margin = unit(c(1, 1, 1, 1), "cm"),
+        plot.background = element_rect(fill = "#30332E"),
+        plot.title = element_text(size = "20", face = "bold", hjust = 0.5),
+        plot.subtitle = element_text(size = "10", face = "bold", hjust = 0.5),
+        plot.caption = element_text(size = "7", face = "bold", hjust = 0.5),
+        legend.position = "none",
+        text = element_text(color = "white"),
+        strip.text = element_text(color = "white"),
+        axis.text.x = element_text(angle = 90, vjust = 0.5,
+                                   color = "white"),
+        axis.text.y = element_text(color = "white"),
+        panel.grid = element_blank())
+bar
+ggsave(bar, 
+       units = c("in"),
+       width = 6.2,
+       height = 3.8,
+       dpi = 300, 
+       file="2020_36_GlobalCropYields.png", 
+       type="cairo-png") 
+```
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------
+
+# prep specific color by factor
+```{r}
+chaparral11 <- cal_palette(name="chaparral1", n=11, type="continuous")
+names(chaparral11) <- levels(as_factor(df$Crops))
+colScale <- scale_fill_manual(values = chaparral11)
+```
+
+
+```{r}
+for(i in 1961:2018) {
+  
+  print(i)
+  crop_brazil <- key_crop_yields %>% 
+    filter(Entity == "Brazil",
+           Year == i) %>% 
+    gather(Crop, tonnes, 4:14) %>% 
+    mutate(Crop = case_when(
+      Crop == "Wheat (tonnes per hectare)" ~ "Wheat", 
+      Crop == "Rice (tonnes per hectare)" ~ "Rice",
+      Crop == "Maize (tonnes per hectare)" ~ "Maize",
+      Crop == "Soybeans (tonnes per hectare)" ~ "Soybeans",
+      Crop == "Potatoes (tonnes per hectare)" ~ "Potatoes",
+      Crop == "Beans (tonnes per hectare)" ~ "Beans",
+      Crop == "Peas (tonnes per hectare)" ~ "Peas",
+      Crop == "Barley (tonnes per hectare)" ~ "Barley",
+      Crop == "Cocoa beans (tonnes per hectare)" ~ "Cocoa",
+      Crop == "Cassava (tonnes per hectare)" ~ "Cassava",
+      Crop == "Bananas (tonnes per hectare)" ~ "Bananas",
+      TRUE ~ Crop))
+      ggplot(crop_brazil, aes(fill=Crop, values = tonnes)) +
+  geom_waffle(n_rows = 10, size = .25, color="#FCFAF1", flip=TRUE) +
+        colScale +
+        scale_x_discrete() + 
+        #scale_y_continuous(labels = functions(x), x * 10,
+        #                   limits = c(0,10),
+        #                   expand = c(.0, 0),
+        #                   breaks = seq(2, 130, 2)) +
+        coord_equal() +
+        labs(
+          title = "Crop Yields", subtitle = i,
+          x = "ton",
+          y= "",
+          caption = "xxxx") +
+            theme_minimal() +
+        theme(legend.position = "right",
+              legend.text = element_markdown(color = "#515151"),
+              size=12,
+              legend.title = element_markdown(color = "#554f68"),
+      legend.box.margin = margin(0, 0,75, -5),
+      plot.background = element_rect(fill = "#FCFAF1",
+                                     color = "#7b9a93",
+      size = 2.5),
+      panel.grid = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.text = element_blank(),
+      axis.title.x = element_text(color = "grey50",
+                                  family = "Times",
+                                  size=13,
+                                  hjust = 1.2,
+                                  margin = margin(-80, 0, 0, 0)),
+      text = element_text(family = "Forum", size = 14),
+      plot.title = element_markdown(family =  "Palatino",
+                          size = 25,
+                          color = "#47636d",
+                          margin = margin(5,0,0,0),
+                          hjust = .115),
+      plot.subtitle = element_textbox_simple(
+        hjust=1.05,
+        size = 40,
+        width = NULL,
+        padding = margin(9.5, 5.5, 5.5, 5.5),
+        margin = margin (-24, -70, 1, 1),
+        fill = "#47636d",
+        color = "#FCFAF1"),
+      plot.caption = element_markdown(family = "Palatino",
+                                      size = 8,
+                                      color = "#154153",
+                                      margin = margin(20, -160, 6, 0),
+                                      lineheight = 1.5, hjust= .99),
+      plot.margin = margin(40, 50, 40, 10)) +
+        guides(fill = guide_legend(reverse = F))
+      
+  
+      
+}
+```
+
+
+
+---------------------------------------------------------------
+
+
+

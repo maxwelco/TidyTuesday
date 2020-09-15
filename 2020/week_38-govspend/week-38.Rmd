@@ -1,0 +1,44 @@
+---
+title: "week-38"
+author: "Maxwel Coura Oliveira"
+date: "9/15/2020"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(hrbrthemes)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2020, week = 38)
+```
+
+
+
+
+```{r}
+kids <- tuesdata$kids %>% 
+  mutate_if(is.character, as.factor)
+glimpse(kids)
+```
+
+
+```{r}
+kids %>% 
+  filter(year == 1997 | year == 2016) %>% 
+  mutate(year = factor(year)) %>% 
+  filter(variable == "PK12ed") %>% 
+  arrange(desc(inf_adj_perchild)) %>% 
+  ggplot(aes(x=reorder(state, inf_adj_perchild), y=inf_adj_perchild)) + 
+      geom_line(color="#F5FFFA") + coord_flip() + geom_point(aes(color=year)) +
+    labs(x="", title = "Public spending on elementary and secondary education from 1997 to 2016 by US states", subtitle = "per child adjusted for inflation in $1,000s", caption = "Source: Urban Institute | Graphic: @maxwelco") +
+  scale_color_manual(name = "", values = c("#B22234", "#87CEFA")) +
+  theme_void() +
+  theme(axis.text = element_text(size=9, color="#F5FFFA"), plot.background = element_rect(fill = "#282728"), plot.title  = element_text(face="bold", size= 11, color = "#FFD700", hjust = 0.7), plot.caption = element_text(color = "beige", hjust = 1.2), 
+        plot.subtitle = element_text(face="bold", size= 9, color = "#FFD700", hjust = 0.5),
+        legend.text = element_text(color="#F5FFFA")) +
+  ggsave("investment.png", height = 7, width = 7)
+```
+
