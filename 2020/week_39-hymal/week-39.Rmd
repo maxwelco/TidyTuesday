@@ -1,0 +1,74 @@
+---
+title: "week-39"
+author: "Maxwel Coura Oliveira"
+date: "9/22/2020"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggridges)
+library(ggbeeswarm)
+library(ggthemes)
+library(hrbrthemes)
+```
+
+
+
+
+```{r}
+# Get the Data
+
+# Read in with tidytuesdayR package 
+# Install from CRAN via: install.packages("tidytuesdayR")
+# This loads the readme and all the datasets for the week of interest
+
+# Either ISO-8601 date or year/week works!
+
+tuesdata <- tidytuesdayR::tt_load('2020-09-22')
+tuesdata <- tidytuesdayR::tt_load(2020, week = 39)
+
+climbers <- tuesdata$climbers
+
+# Or read in the data manually
+
+members <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/members.csv')
+expeditions <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/expeditions.csv')
+peaks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-09-22/peaks.csv')
+```
+
+
+
+
+```{r message=FALSE, warning= FALSE}
+expeditions %>% 
+  mutate(days_to_peak =  as.double(expeditions$highpoint_date - expeditions$basecamp_date),
+         days_to_finish= as.double(termination_date - expeditions$basecamp_date)) %>% 
+  filter(termination_reason == "Success (main peak)") %>% 
+  na.omit() %>% 
+  ggplot(aes(x=days_to_peak, y=highpoint_metres, fill=oxygen_used)) +  geom_hex(bins = 30, alpha=0.4) +
+  geom_smooth(aes(color=oxygen_used), size=2) + xlim(0,65) +
+  theme_solarized_2() +
+  labs(x="Days to peak", y = "Elevation highpoint (m)", fill="Oxygen used", color ="Oxygen used",
+       title = "Himalayan Climbing Expeditions", subtitle = "Days from arrival at basecamp to summiting the peak for successful expeditions using or not oxygen", caption = "The Himalayan Database | @maxwelco") +
+  scale_color_manual(values = c("#282728", "#c5050c")) +
+  scale_fill_manual(values = c("#adadad", "#e07560")) +
+  theme(legend.position = "bottom", panel.background = element_blank(), plot.title = element_text(size=15, face="bold"), plot.subtitle = element_text(size=10),
+        axis.title = element_text(size=14, face="bold"),
+        axis.text = element_text(size=11)) +
+  ggsave("peak.png", height = 7, width = 7)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+

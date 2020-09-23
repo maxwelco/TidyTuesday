@@ -13,7 +13,6 @@ library(waffle)
 library(magrittr)
 library(extrafont)
 library(ggtext)
-library(hrbrthemes)
 library(colorspace)
 library(calecopal)
 ```
