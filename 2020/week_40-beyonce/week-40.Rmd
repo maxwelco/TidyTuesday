@@ -1,0 +1,196 @@
+---
+title: "week-40"
+author: "Maxwel Coura Oliveira"
+date: "9/30/2020"
+output: html_document
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(tidytext)
+library(rcorpora)
+library(topicmodels)
+library(tm)
+library(ggwordcloud)
+```
+
+
+
+```{r include=FALSE}
+#tuesdata <- tidytuesdayR::tt_load('2020-09-29')
+tuesdata <- tidytuesdayR::tt_load(2020, week = 40)
+
+beyonce_lyrics <- tuesdata$beyonce_lyrics
+taylor_swift_lyrics <- tuesdata$taylor_swift_lyrics
+sales <- tuesdata$sales
+charts <- tuesdata$charts
+```
+
+```{r}
+glimpse(beyonce_lyrics)
+glimpse(taylor_swift_lyrics)
+```
+
+
+
+```{r}
+bey_tokens <- beyonce_lyrics %>%
+  unnest_tokens(words, line) %>% 
+  select(artist = artist_name,
+         words = words)
+#artist_tokens <- rbind(bey_tokens, taylor_tokens)
+```
+
+
+
+
+
+
+```{r}
+#english
+Enlish <-corpora("words/stopwords/en")  
+stopwords_en <- c(Enlish$stopWords) # stop english words 
+stopwords_en <- tolower(stopwords_en) # making lowercase
+```
+
+
+
+
+```{r}
+bey_source <- VectorSource(bey_tokens$words)
+bey_corpus <- VCorpus(bey_source)
+```
+
+```{r}
+# this code section will take long (~3 min) to run. 
+clean_corpus <- function(corpus){
+  corpus <- tm_map(corpus, removeNumbers) # remove numbers
+  corpus <- tm_map(corpus, removeWords, stopwords_en) # remove stop words
+  corpus
+}
+
+bey_corpus <- clean_corpus(bey_corpus)
+```
+
+
+
+
+```{r}
+bey_dt <- TermDocumentMatrix(bey_corpus)
+bey_matrix <- as.matrix(bey_dt)
+bey_v <- sort(rowSums(bey_matrix), decreasing=TRUE)
+bey_dt <- data.frame(word = names(bey_v),freq=bey_v)
+```
+```{r}
+bey <- bey_dt %>% 
+  mutate(artist = "Beyoncé")
+```
+
+
+```{r warning = FALSE}
+library(wordcloud)
+
+pal <- brewer.pal(8,"Dark2") #selecting the color palette
+
+set.seed(1234)
+wordcloud(words = bey_dt$word, freq = bey_dt$freq, min.freq=2, scale=c(5,.1), 
+           random.order=FALSE, rot.per=0.35, colors=pal)
+
+```
+
+
+
+```{r}
+taylor_tokens <- taylor_swift_lyrics %>%
+  unnest_tokens(words, Lyrics)  %>% 
+  select(artist = `Artist `,
+         words = words)
+
+#artist_tokens <- rbind(taylor_tokens, taylor_tokens)
+```
+
+
+
+
+
+
+```{r}
+#english
+Enlish <-corpora("words/stopwords/en")  
+stopwords_en <- c(Enlish$stopWords) # stop english words 
+stopwords_en <- tolower(stopwords_en) # making lowercase
+```
+
+
+
+
+```{r}
+taylor_source <- VectorSource(taylor_tokens$words)
+taylor_corpus <- VCorpus(taylor_source)
+```
+
+```{r}
+# this code section will take long (~3 min) to run. 
+clean_corpus <- function(corpus){
+  corpus <- tm_map(corpus, removeNumbers) # remove numbers
+  corpus <- tm_map(corpus, removeWords, stopwords_en) # remove stop words
+  corpus
+}
+
+taylor_corpus <- clean_corpus(taylor_corpus)
+```
+
+
+
+
+```{r}
+taylor_dt <- TermDocumentMatrix(taylor_corpus)
+taylor_matrix <- as.matrix(taylor_dt)
+taylor_v <- sort(rowSums(taylor_matrix), decreasing=TRUE)
+taylor_dt <- data.frame(word = names(taylor_v),freq=taylor_v)
+```
+```{r}
+taylor <- taylor_dt %>% 
+  mutate(artist = "Taylor Swift")
+```
+
+
+```{r warning = FALSE}
+library(wordcloud)
+
+pal <- brewer.pal(8,"Dark2") #selecting the color palette
+
+set.seed(1234)
+wordcloud(words = taylor_dt$word, freq = taylor_dt$freq, min.freq=1, scale=c(4,.1),
+          random.order=FALSE, rot.per=0.35, colors=pal) + ggsave("nn.png")
+
+```
+
+```{r}
+wordcloud(words = cloud$word, freq =cloud$freq, min.freq=1, scale=c(4,.1),
+          random.order=FALSE, rot.per=0.35, colors=pal) + facet_grid(~artist)
+```
+
+```{r}
+  rbind(bey, taylor) %>% 
+  filter(freq > 100) %>% 
+ggplot(
+  aes(
+    label = word, size = freq, 
+    color = word)) + 
+    theme_replace() +
+    scale_size_area(max_size = 15) +
+    geom_text_wordcloud_area() +
+    facet_wrap(~artist) +
+    labs(title = "Beyoncé and Taylor Swift Lyrics", 
+         subtitle = "Frequency of words higher than 100") +
+    theme(strip.text = element_text(size=12, face="bold"), 
+        plot.title = element_text(color = "purple", size=15, 
+                                  face="bold",
+                                  hjust = 0.5),
+        plot.subtitle = element_text(size=10, 
+                                  hjust = 0.5)) +
+  ggsave("figure.png", width = 8, height =5)
+```
+
+
