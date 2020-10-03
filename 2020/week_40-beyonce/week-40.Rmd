@@ -26,24 +26,20 @@ sales <- tuesdata$sales
 charts <- tuesdata$charts
 ```
 
+
 ```{r}
 glimpse(beyonce_lyrics)
 glimpse(taylor_swift_lyrics)
 ```
 
 
-
+# Beyonce
 ```{r}
 bey_tokens <- beyonce_lyrics %>%
   unnest_tokens(words, line) %>% 
   select(artist = artist_name,
          words = words)
-#artist_tokens <- rbind(bey_tokens, taylor_tokens)
 ```
-
-
-
-
 
 
 ```{r}
@@ -54,15 +50,12 @@ stopwords_en <- tolower(stopwords_en) # making lowercase
 ```
 
 
-
-
 ```{r}
 bey_source <- VectorSource(bey_tokens$words)
 bey_corpus <- VCorpus(bey_source)
 ```
 
 ```{r}
-# this code section will take long (~3 min) to run. 
 clean_corpus <- function(corpus){
   corpus <- tm_map(corpus, removeNumbers) # remove numbers
   corpus <- tm_map(corpus, removeWords, stopwords_en) # remove stop words
@@ -72,21 +65,23 @@ clean_corpus <- function(corpus){
 bey_corpus <- clean_corpus(bey_corpus)
 ```
 
-
-
-
+# matrix
 ```{r}
 bey_dt <- TermDocumentMatrix(bey_corpus)
 bey_matrix <- as.matrix(bey_dt)
 bey_v <- sort(rowSums(bey_matrix), decreasing=TRUE)
 bey_dt <- data.frame(word = names(bey_v),freq=bey_v)
 ```
+
+
+# add artist column
 ```{r}
 bey <- bey_dt %>% 
   mutate(artist = "Beyoncé")
 ```
 
 
+# word cloud
 ```{r warning = FALSE}
 library(wordcloud)
 
@@ -99,7 +94,7 @@ wordcloud(words = bey_dt$word, freq = bey_dt$freq, min.freq=2, scale=c(5,.1),
 ```
 
 
-
+# Taylor
 ```{r}
 taylor_tokens <- taylor_swift_lyrics %>%
   unnest_tokens(words, Lyrics)  %>% 
@@ -123,7 +118,7 @@ stopwords_en <- tolower(stopwords_en) # making lowercase
 
 
 
-
+# corpus
 ```{r}
 taylor_source <- VectorSource(taylor_tokens$words)
 taylor_corpus <- VCorpus(taylor_source)
@@ -149,12 +144,15 @@ taylor_matrix <- as.matrix(taylor_dt)
 taylor_v <- sort(rowSums(taylor_matrix), decreasing=TRUE)
 taylor_dt <- data.frame(word = names(taylor_v),freq=taylor_v)
 ```
+
+# add a artist column
 ```{r}
 taylor <- taylor_dt %>% 
   mutate(artist = "Taylor Swift")
 ```
 
 
+# cloud 
 ```{r warning = FALSE}
 library(wordcloud)
 
@@ -166,30 +164,31 @@ wordcloud(words = taylor_dt$word, freq = taylor_dt$freq, min.freq=1, scale=c(4,.
 
 ```
 
-```{r}
-wordcloud(words = cloud$word, freq =cloud$freq, min.freq=1, scale=c(4,.1),
-          random.order=FALSE, rot.per=0.35, colors=pal) + facet_grid(~artist)
-```
 
-```{r}
+# combining Taylor and Beyonce
+```{r warning=FALSE}
   rbind(bey, taylor) %>% 
   filter(freq > 100) %>% 
 ggplot(
   aes(
     label = word, size = freq, 
     color = word)) + 
-    theme_replace() +
     scale_size_area(max_size = 15) +
     geom_text_wordcloud_area() +
     facet_wrap(~artist) +
     labs(title = "Beyoncé and Taylor Swift Lyrics", 
-         subtitle = "Frequency of words higher than 100") +
-    theme(strip.text = element_text(size=12, face="bold"), 
-        plot.title = element_text(color = "purple", size=15, 
+         subtitle = "Frequency of words higher than 100",
+         caption = "Source:  Rosie Baillie and Dr. Sara Stoudt | Graphic: @maxwelco") +
+    theme(strip.text = element_text(size=16, face="bold", color="pink"), 
+          strip.background = element_rect(fill="black"),
+        plot.title = element_text(color = "purple", size=18, 
                                   face="bold",
                                   hjust = 0.5),
-        plot.subtitle = element_text(size=10, 
-                                  hjust = 0.5)) +
+        plot.subtitle = element_text(color = "purple", size=8, 
+                                  hjust = 0.5),
+        plot.caption = element_text(size=7, color="white"),
+        plot.background = element_rect(fill="black"),
+        panel.background = element_rect(fill="black")) +
   ggsave("figure.png", width = 8, height =5)
 ```
 
