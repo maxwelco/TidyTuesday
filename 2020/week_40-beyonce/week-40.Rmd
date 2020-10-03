@@ -177,16 +177,16 @@ ggplot(
     geom_text_wordcloud_area() +
     facet_wrap(~artist) +
     labs(title = "Beyoncé and Taylor Swift Lyrics", 
-         subtitle = "Frequency of words higher than 100",
+         subtitle = "Frequency of words in Beyoncé and Taylor Swift lyrics higher than 100",
          caption = "Source:  Rosie Baillie and Dr. Sara Stoudt | Graphic: @maxwelco") +
-    theme(strip.text = element_text(size=16, face="bold", color="pink"), 
+    theme(strip.text = element_text(size=16, face="bold", color="beige"), 
           strip.background = element_rect(fill="black"),
         plot.title = element_text(color = "purple", size=18, 
                                   face="bold",
                                   hjust = 0.5),
-        plot.subtitle = element_text(color = "purple", size=8, 
+        plot.subtitle = element_text(color = "pink", size=8, 
                                   hjust = 0.5),
-        plot.caption = element_text(size=7, color="white"),
+        plot.caption = element_text(size=7, color="beige"),
         plot.background = element_rect(fill="black"),
         panel.background = element_rect(fill="black")) +
   ggsave("figure.png", width = 8, height =5)
