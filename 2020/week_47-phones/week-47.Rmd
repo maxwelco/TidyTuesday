@@ -1,0 +1,118 @@
+---
+title: "phones"
+author: "Maxwel Coura Oliveira"
+date: "11/17/2020"
+output: html_document
+---
+
+```{r}
+# Get the Data
+
+# Read in with tidytuesdayR package 
+# Install from CRAN via: install.packages("tidytuesdayR")
+# This loads the readme and all the datasets for the week of interest
+
+# Either ISO-8601 date or year/week works!
+
+tuesdata <- tidytuesdayR::tt_load('2020-11-10')
+tuesdata <- tidytuesdayR::tt_load(2020, week = 46)
+
+mobile <- tuesdata$mobile
+
+# Or read in the data manually
+
+mobile <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/mobile.csv')
+landline <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/landline.csv')
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+landline %>% 
+  ggplot(aes(x=year, y=landline_subs, color=continent)) +
+  geom_smooth() + 
+  geom_jitter(alpha=0.2)
+```
+
+
+
+```{r}
+mobile %>% 
+  ggplot(aes(x=year, y=mobile_subs, color=continent)) +
+  geom_smooth() + 
+  geom_jitter(alpha=0.2)
+```
+
+```{r}
+mobile %>% 
+#  select(-total_pop) %>% 
+  left_join(landline, by = "code")
+```
+
+
+
+```{r}
+mobile %>% 
+  filter(continent == "Americas") 
+
+world_map %>% 
+  filter(region == "French Guiana") 
+```
+
+```{r}
+world_map %>% 
+  filter(region == "Syria")
+```
+
+
+```{r}
+world_map <- map_data("world") %>%
+  mutate(region = case_when(
+    region == "UK"           ~ "United Kingdom",
+    region == "USA"          ~ "United States",
+    region == "Republic of Congo" ~ "Congo",
+    region == "Democratic Republic of the Congo" ~ "Democratic Republic of Congo",
+    subregion == "Hong Kong" ~ "Hong Kong",
+    TRUE                     ~ region
+    )
+  )
+```
+
+```{r}
+mobile_map <- mobile %>% 
+  left_join(world_map, by = c("entity" = "region")) %>% 
+  filter(continent == "Americas")
+```
+
+
+
+```{r}
+glimpse(mobile_map)
+```
+
+```{r}
+library(gganimate)
+```
+
+
+
+```{r}
+ggplot() +
+  # layer 1
+  geom_polygon(mobile_map, 
+               mapping = aes(x = long, y = lat, group = group), 
+               fill = "lightgray") + xlim(-25, -175) +
+  # layer 2
+  geom_polygon(mobile_map, 
+               mapping = aes(x = long, y = lat, group = group, 
+                             fill = mobile_subs)) + 
+  scale_fill_viridis_c() +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+   transition_reveal(year)
+
+```
+

@@ -1,0 +1,136 @@
+---
+title: "week-4"
+author: "Maxwel Coura Oliveira"
+date: "1/22/2021"
+output: html_document
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(ggthemes)
+require(ggimage) 
+library(grid)
+library(extrafont)
+library(showtext)
+library(sysfonts)
+```
+
+
+```{r}
+#remotes::install_github("Shelmith-Kariuki/rKenyaCensus")
+library(rKenyaCensus)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 4)
+```
+
+
+
+```{r}
+gender <- tuesdata$gender
+crops <- tuesdata$crops
+households <- tuesdata$households
+```
+
+
+
+```{r}
+crops1 %>% 
+  summarise(sum(population))
+```
+
+
+
+```{r}
+crops1 <- crops %>% 
+  pivot_longer(cols = c(-SubCounty, -Farming), 
+               names_to = "crop", values_to = "population") %>% 
+  filter(!is.na(population)) %>% 
+  mutate(SubCounty = str_to_title(SubCounty)) %>% 
+  filter(crop == "Coffee" & SubCounty != "Kenya") %>% 
+  arrange(desc(population)) %>% 
+  mutate(rank = row_number()) 
+```
+
+
+
+```{r}
+## Loading Google fonts (https://fonts.google.com/)
+font_add_google("Playfair Display", ## name of Google font
+                "Playfair")  ## name that will be used in R
+font_add_google("Gochi Hand", "gochi")
+font_add_google("Schoolbell", "bell")
+font_add_google("Covered By Your Grace", "grace")
+font_add_google("Rock Salt", "rock")
+font_add_google("Bangers", "Bangers")
+```
+
+
+```{r}
+library(png)
+img <- readPNG("flag.png")
+```
+
+
+```{r warning = FALSE}
+ggplot(crops1, aes(x = population, 
+                   y = rank,
+                   size = population, 
+                   color = population)) +
+annotation_custom(rasterGrob(img, 
+                              width = unit(1,"npc"), 
+                               height = unit(1,"npc")), 
+                   xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf) +
+  geom_line(alpha = 0.8, size = 1) +
+  geom_point(alpha = 0.8) +
+  scale_color_gradient(low = "black", high = "white") + 
+  scale_y_reverse(breaks = 25:1) +
+  scale_x_continuous(breaks = seq(0, 70000, 10000), 
+                     limits= c(0, 70000),
+                     expand = c(.05, .05)) +
+  geom_text(aes(label = SubCounty),
+            hjust = "left", 
+            family = "Tahoma",
+            nudge_x = 1500, 
+            fontface = "bold", 
+            check_overlap = TRUE,
+            size = 3) +
+  scale_size_continuous("Population growing farming coffee") + 
+  annotate("text", x = 55000, y = 22.5,
+           color = "white", 
+           size = 5,
+           family = "Trattatello",
+           label = c("Near 65 K grow coffee in Murang'a county")) +
+  annotate("text", x = 15000, y = 2, 
+           color = "white", 
+           size = 5,
+           family = "Trattatello",
+           label = c("There are 479 K coffee growers in Kenya")) +
+  labs(title = "Kenya Coffee",
+       subtitle = "Rank of population growing farming coffee across counties",
+       caption = "Source: rKenyaCensus | Figure: @maxwelco") +
+  theme_void() +
+  theme(legend.position = "none", 
+        plot.title = element_text(hjust = .5, size = 25, family = "Luminari"),
+        plot.subtitle = element_text(hjust = .5, size = 14, 
+                                     family = "Courier New"),
+        plot.background = element_rect(fill = "#f5f5dc"),
+        plot.caption = element_text(family = "Khmer Sangam MN")) +
+  ggsave("kenya_coffee.png", height = 4, width = 7, dpi = 500)
+```
+
+```{r}
+library(extrafont)
+extrafont::font_import()
+```
+
+
+```{r}
+head(font_families_google())
+```
+
+
+
+

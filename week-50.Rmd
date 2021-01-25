@@ -1,0 +1,85 @@
+---
+title: "week-50"
+author: "Maxwel Coura Oliveira"
+date: "12/7/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Get the Data
+
+# Read in with tidytuesdayR package 
+# Install from CRAN via: install.packages("tidytuesdayR")
+# This loads the readme and all the datasets for the week of interest
+
+# Either ISO-8601 date or year/week works!
+
+tuesdata <- tidytuesdayR::tt_load('2020-12-08')
+tuesdata <- tidytuesdayR::tt_load(2020, week = 50)
+
+women <- tuesdata$women
+
+# Or read in the data manually
+
+women <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-12-08/women.csv')
+
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+# install.packages('devtools')
+#devtools::install_github('bbc/bbplot')
+```
+
+```{r}
+if(!require(pacman))install.packages("pacman")
+
+pacman::p_load('dplyr', 'tidyr', 'gapminder',
+               'ggplot2',  'ggalt',
+               'forcats', 'R.utils', 'png', 
+               'grid', 'ggpubr', 'scales',
+               'bbplot')
+```
+
+
+```{r}
+#Data for chart from gapminder package
+line_df <- gapminder %>%
+  filter(country == "Malawi") 
+
+#Make plot
+line <- ggplot(line_df, aes(x = year, y = lifeExp)) +
+  geom_line(colour = "#1380A1", size = 1) +
+  geom_hline(yintercept = 0, size = 1, colour="#333333") +
+  bbc_style() +
+  labs(title="Living longer",
+       subtitle = "Life expectancy in Malawi 1952-2007") + 
+  theme(panel.grid.major.x = element_line(color="#cbcbcb"), 
+        panel.grid.major.y=element_blank())
+line 
+```
+
+```{r}
+finalise_plot(plot_name = line,
+              source = "Source: Gapminder",
+              save_filepath = "filename_that_my_plot_should_be_saved_to.png",
+              width_pixels = 640,
+              height_pixels = 450,
+              logo_image_path = "placeholder.png")
+```
+
+
+
+
+
+
+
+
