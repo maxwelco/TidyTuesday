@@ -1,0 +1,79 @@
+---
+title: "week_5-plastic"
+author: "Maxwel Coura Oliveira"
+date: "2/1/2021"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = TRUE,
+  warning = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-01-26')
+tuesdata <- tidytuesdayR::tt_load(2021, week = 5)
+
+plastics <- tuesdata$plastics 
+```
+
+```{r}
+plastics %>% 
+  distinct(country)
+```
+
+
+
+```{r}
+plastics1 <- plastics %>% 
+  mutate(country = str_to_title(country)) %>%
+  group_by(country, parent_company) %>% 
+  summarise(hdpe = sum(hdpe, na.rm = TRUE),
+            ldpe = sum(ldpe, na.rm = TRUE),
+            other = sum(o, na.rm = TRUE),
+            pet = sum(pet, na.rm = TRUE),
+            pp = sum(pp, na.rm = TRUE),
+            ps = sum(ps, na.rm = TRUE),
+            pvc = sum(pvc, na.rm = TRUE),
+            grand_total = sum(grand_total, na.rm = TRUE)) %>% 
+  pivot_longer(cols = hdpe:pvc, names_to = "plastic_type", values_to = "plastic_count") %>% 
+  select(country, parent_company, plastic_type, plastic_count, grand_total) %>% 
+  mutate(perc = round(plastic_count / grand_total, 2)) %>% 
+  filter(country != "Empty")
+```
+
+
+```{r}
+plastics1 %>% 
+  filter(parent_company == "The Coca-Cola Company") %>% 
+  filter(perc != "NaN") %>% 
+  filter(plastic_type == "pet") %>% 
+  mutate(country = fct_recode(country,
+                              "United Kingdom" = 
+                                "United Kingdom Of Great Britain & Northern Ireland" )) %>% 
+  ggplot(aes(x = fct_reorder(country, perc), y = perc)) +
+  geom_segment(aes(xend=country, yend=0), alpha = 0.5) +
+  geom_point(aes(size = grand_total), alpha = 0.5) +
+  coord_flip() +
+  theme_fivethirtyeight() +
+  labs(title = "The Coca-Cola Company Plastic Pollution", 
+       subtitle = "Percentage of PET among other types of plastic", 
+       caption =  "Break Free from Plastic | Image: @maxwelco",
+       x = "",
+       size = "Total count") +
+  scale_y_continuous("", labels = scales::percent_format(scale = 100)) +
+  theme(legend.position = "bottom",
+        plot.subtitle = element_text(hjust = 0),
+        plot.caption = element_text(hjust = 0)) +
+  ggsave("coca.png", height = 8)
+```
+
+

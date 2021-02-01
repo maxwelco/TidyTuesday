@@ -1,0 +1,93 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(tidytuesdayR)
+library(tidytext)
+library(wpp2019)
+library(countrycode)
+```
+
+```{r}
+data("pop")
+theme_set(theme_light())
+```
+
+```{r}
+#1  Get the Data
+tt <- tidytuesdayR::tt_load(2021, week = 5)
+plastic <- tt$plastics
+plastic_long <- 
+  plastic %>% 
+  mutate(country = str_to_title(country)) %>% 
+  filter(country !="Empty", 
+         parent_company != "Grand Total") %>% 
+  mutate(continent = countrycode(sourcevar = country,
+                                 origin = "country.name",
+                                 destination = "continent")) %>%
+  pivot_longer(cols = hdpe:pvc, names_to = "type", values_to = "value")
+plastic_long_renamed <- 
+  plastic_long %>%
+  mutate(type = case_when(
+           type == 'hdpe' ~ 'High density polyethylene',
+           type == 'ldpe' ~ 'Low density polyethylene',
+           type == 'o' ~ 'Other',
+           type == 'pet' ~ 'Polyester',
+           type == 'pp' ~ 'Polypropylene',
+           type == 'ps' ~ 'Polystyrene',
+           type == 'pvc' ~ 'PVC'),
+         country = case_when(
+           country == "United Kingdom Of Great Britain & Northern Ireland" ~ "United Kingdom",
+           country == "Cote D_ivoire" ~ "Cote d'Ivoire",
+           country == "Tanzania" ~ "United Republic of Tanzania",
+           country == "Hong Kong" ~ "China, Hong Kong SAR",
+           country == "United States Of America" ~ "United States of America",
+           country =="Korea" ~ "Republic of Korea",
+           country == "Vietnam" ~ "Viet Nam",
+           country == "Taiwan_ Republic Of China (Roc)" ~ "China, Taiwan Province of China",
+           TRUE ~ country
+         )) 
+plastic_long_renamed_ranked <- 
+  plastic_long_renamed %>%
+  filter(type != "grand_total") %>%
+  group_by(country, type) %>%
+  mutate(sum_per_type = sum(value, na.rm = TRUE)) %>%
+  filter(!is.na(volunteers)) %>%
+  distinct(country, continent, type, sum_per_type) %>%
+  mutate(sum_per_type = replace(sum_per_type, is.na(sum_per_type), 0)) %>%
+  group_by(country) %>%
+  mutate(sum_per_country = sum(sum_per_type, na.rm = TRUE)) %>%
+  #filter(country == "Bhutan") %>%
+  ungroup()
+```
+
+```{r}
+plastic_long_renamed_ranked %>%
+  ggplot(aes(x = type, y = reorder(country, sum_per_country), fill = log2(sum_per_type + 1))) +
+  geom_tile() +
+  scale_fill_gradient2(low = "white", high = "#708ba6") +
+  coord_flip() +
+  labs(title = "Plastic Pollution: Nigeria has a sad leadership", 
+       subtitle = "The plot shows the total plastic pieces collected for each country.\nOf course there are many confounding factors here such as the location where the events took place and the actual performance of each volunteer.",
+       x = "", y = "", fill = "Total plastic pieces found (log2)", color = "Continent", 
+       caption = "by @GoldenB16117397 | source: #TidyTuesday/Plastic Pollution") +
+  expand_limits(x = 0, y = 0) +
+  geom_point(aes(x = 0.2, y = country, color = continent), size = 3) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, margin = margin(t = 3, r = 0, b = 0, l = 0)),
+        axis.text.y.left = element_text(size = 9, family = "Times New Roman"),
+        plot.title.position = "plot",
+        plot.title = element_text(vjust = 2, size = 22, family = "Times New Roman", margin = margin(2,1,1,1)),
+        legend.text = element_text(family = "Times New Roman"),
+        plot.subtitle = element_text(vjust = 2, size = 12, family = "Times New Roman"),
+        plot.caption = element_text(size = 9, family = "Times New Roman", hjust = 1.1),
+        axis.ticks.x = element_blank(),
+        panel.grid = element_blank(),
+        panel.border = element_blank()) +
+ggsave("plastic.png", 
+            units = "in", dpi = 310, scale = 1, width = 16, height = 5)
+```
+
