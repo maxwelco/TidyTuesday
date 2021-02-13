@@ -17,8 +17,6 @@ library(tidyverse)
 library(ggthemes)
 library(ggtext)
 library(gganimate)
-library(extrafont)
-extrafont::loadfonts()
 ```
 
 ```{r import-data}
@@ -56,7 +54,7 @@ theme_set(theme_fivethirtyeight() + theme_style)
 
 
 
-```{r}
+```{r figure}
 retirement %>% 
   ggplot(aes(x = year, y = retirement, group = race, color = race)) +
   geom_label(aes(label = race), show.legend = FALSE) +
