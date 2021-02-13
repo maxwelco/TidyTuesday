@@ -1,0 +1,116 @@
+---
+title: "week-6"
+author: "Maxwel Coura Oliveira"
+date: "2/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = TRUE,
+  Wwarning = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(ggtext)
+library(patchwork)
+library(extrafont)
+```
+
+
+```{r}
+extrafont::loadfonts(device = "postscript")
+hbcu <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-02/hbcu_all.csv') %>% janitor::clean_names()
+hbcu_black <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-02-02/hbcu_black.csv') %>% janitor::clean_names()
+```
+
+# explore data!
+```{r}
+hbcu_black %>%
+  select(year, males, females) %>%
+  pivot_longer(cols = c(males, females), names_to = "sex", values_to = "enrollment") %>%
+  ggplot() + 
+  geom_line(aes(x = year, y = enrollment, color = sex))
+```
+
+```{r, warning = FALSE}
+eda <- bind_rows(
+  hbcu %>% mutate(group = "all"), 
+  hbcu_black %>% mutate(group = "black")
+  ) %>%
+  select(year, group, males, females) %>%
+  pivot_longer(cols = c(males, females), names_to = "sex", values_to = "enrollment") %>%
+  pivot_wider(names_from = "group", values_from = "enrollment") %>%
+  mutate(
+    percent_black = black/all, 
+    nonblack = all - black, 
+    percent_nonblack = nonblack/all
+    )
+eda
+eda %>%
+  select(year, sex, black, nonblack) %>%
+  pivot_longer(cols = c(black, nonblack), names_to = "race", values_to = "enrollment") %>%
+  ggplot() + 
+  geom_line(aes(x = year, y = enrollment, color = race)) + 
+  facet_wrap(~sex)
+eda %>%
+  select(year, sex, percent_black, percent_nonblack) %>%
+  pivot_longer(cols = c(percent_black, percent_nonblack), names_to = "race", values_to = "percent") %>%
+  ggplot() + 
+  geom_line(aes(x = year, y = percent, color = race)) + 
+  facet_wrap(~sex)
+eda %>%
+  filter(year >= 2000) %>%
+  select(year, sex, percent_black, percent_nonblack) %>%
+  pivot_longer(cols = c(percent_black, percent_nonblack), names_to = "race", values_to = "percent") %>%
+  ggplot() + 
+  geom_line(aes(x = year, y = percent, color = race)) + 
+  facet_wrap(~sex)
+```
+
+```{r}
+# create final dataset
+df <- bind_rows(
+  hbcu %>% mutate(group = "all"), 
+  hbcu_black %>% mutate(group = "black")
+  ) %>%
+  select(year, group, total_enrollment) %>%
+  pivot_wider(names_from = "group", values_from = "total_enrollment") %>%
+  mutate(nonblack = all - black) %>%
+  select(-all) %>%
+  pivot_longer(cols = c(black, nonblack), names_to = "race", values_to = "enrollment")
+```
+
+```{r, fig.width = 6}
+title <- "<span> Enrollment of <span style = 'color: #222222'>**Black**</span> and <span style = 'color: #D4AF37'>**non-black**</span> students at HBCUs </span>"
+subtitle <- "<span>The total number of Black students enrolled at HBCUs has fallen since 2010, even as the<br>total enrollment of non-black students at HBCUs has continued to increase.</span>"
+caption <- "\n\nSource: National Center for Education Statistics | Viz: @marisalyn"
+plot <- ggplot(df, aes(x = year, y = enrollment, color = race)) +
+  geom_line(size = 1.2) + 
+  geom_point(size = 2.2) + 
+ 
+  scale_color_manual(values = c("nonblack" = "#D4AF37", "black" = "#222222"))  + 
+  scale_y_continuous(
+    breaks = seq(0, 250000, 50000), 
+    labels = scales::comma, 
+    limits = c(0, 275000)
+    ) +
+  labs( title = title, subtitle = subtitle, caption = caption) + 
+  theme_minimal(base_family = "Verdana") +
+  theme(
+    legend.position = "none", 
+    axis.title = element_blank(),
+    axis.text = element_text(color = "#636363"),
+    plot.title = element_markdown(family = "Verdana", color = "#636363"),
+    plot.subtitle = element_markdown(family = "Verdana",  color = "#636363", size = 9),
+    plot.caption = element_text(family = "Verdana", color = "#636363")
+    )
+plot
+```
+
+```{r}
+ggsave("hbcu_20210202.png", plot = plot, type = "cairo", width = 6, height = 4, units = "in")
+```

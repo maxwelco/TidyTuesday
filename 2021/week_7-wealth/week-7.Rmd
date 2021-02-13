@@ -1,0 +1,78 @@
+---
+title: "week-7"
+author: "Maxwel Coura Oliveira"
+date: "2/13/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = TRUE,
+  warning = TRUE)
+```
+
+```{r packages}
+library(tidyverse)
+library(ggthemes)
+library(ggtext)
+library(gganimate)
+library(extrafont)
+extrafont::loadfonts()
+```
+
+```{r import-data}
+tuesdata <- tidytuesdayR::tt_load('2021-02-09')
+tuesdata <- tidytuesdayR::tt_load(2021, week = 7)
+```
+
+
+```{r load-data}
+retirement <- tuesdata$retirement
+```
+
+```{r theme, message = FALSE}
+#Set theme
+library(extrafont)
+extrafont::loadfonts()
+font_family <- 'Helvetica'
+title_family <- ".New York"
+theme_style <- theme(text = element_text(family = font_family),
+                  plot.title = element_markdown(family = title_family,
+                                            face = 'bold', size = 18,
+                                            hjust = -2),
+                  plot.subtitle = element_markdown(family = title_family, 
+                                                   size = 13),
+                  plot.caption = element_markdown(family = title_family,
+                                              size = 8, hjust = 0),
+                  axis.text = element_text(size = 11),
+                  legend.text = element_text(size = 13),
+                  legend.title = element_text(size = 13),
+                  legend.position="none") 
+
+
+theme_set(theme_fivethirtyeight() + theme_style)
+```
+
+
+
+```{r}
+retirement %>% 
+  ggplot(aes(x = year, y = retirement, group = race, color = race)) +
+  geom_label(aes(label = race), show.legend = FALSE) +
+  geom_line(aes(color = race), show.legend = FALSE) + 
+  scale_y_continuous(n.breaks = 10, 
+                     labels = scales::dollar_format(prefix = "$")) +
+  scale_x_continuous(limits = c(1989, 2016), n.breaks = 10,
+                     labels = scales::label_number(accuracy = 1, 
+                                                   big.mark = "")) +
+  labs(y = "",
+       x = "",
+       title = "Retirement savings in the <b style='color:red;'>United States of America</b>",
+       subtitle = "The inequality among races has dramatically increased in 25 years",
+       caption = "Visualization: @maxwelco | Source: Urban Institute") +
+  scale_color_brewer(palette = "Set1")  +
+  transition_reveal(along = year) +
+  view_follow(fixed_x = TRUE) +
+  anim_save("retirement.gif")
+```
