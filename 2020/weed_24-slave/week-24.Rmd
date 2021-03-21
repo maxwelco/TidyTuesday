@@ -1,0 +1,459 @@
+---
+title: "slave-trade"
+author: "Maxwel Coura Oliveira"
+date: "2/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Library statements ------------------------------------------------------
+
+```{r}
+library(tidyverse)
+library(ggforce)
+library(ggtext)
+library(ggh4x)
+library(seriation)
+library(dynamicTreeCut)
+library(colorspace)
+```
+
+# Data import -------------------------------------------------------------
+```{r}
+slave_routes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-06-16/slave_routes.csv')
+```
+
+
+# Order cities on population to get the more populous one when matched by name.
+```{r}
+cities <- maps::world.cities %>%
+  filter(name != "Gold Coast" & country.etc != "Australia") %>% # Because that is not the intended Gold Coast
+  arrange(-pop)
+```
+
+```{r}
+# Place-country lookup table (LUT) for less populous areas and 
+# other kinds of places (rivers, provinces, etc.).
+# I didn't fact check this and the list is not complete.
+# Mostly I googled these places and made an educated guess.
+# Especially for African places that now have newer names than in the data this
+# method is error prone.
+place_lut <- tribble(
+  ~replace, ~by,
+  "Havana", "Havanna",
+  "Brest", "France", # Might have been confused with landlocked Brest, Belarus
+  "Bahia", "Brazil",
+  "Seville", "Sevilla",
+  "Southeast Brazil", "Brazil",
+  "Essequibo", "Guyana",
+  "Cap Francais", "Cap-Haitien",
+  "Rhode Island", "USA",
+  "Bristol (RI)", "USA",
+  "Zeeland", "Netherlands",
+  "Hellevoetsluis", "Netherlands",
+  "Pernambuco", "Brazil",
+  "San Lucar", "Spain",
+  "Honfleur", "France",
+  "Dunkerque", "Dunkirk",
+  "St. Thomas", "USA",
+  "Kobenhavn", "Copenhagen",
+  "Africa.", "Africa",
+  "St. Kitts", "Saint Kitts and Nevis",
+  "Demerara", "Guyana",
+  "Cayes (Les)", "Les Cayes",
+  "St. Vincent", "Saint Vincent and The Grenadines",
+  "York River", "Richmond",
+  "Maranhao", "Sao Luis",
+  "Curacao", "Willemstad",
+  "Saint John (Antigua)", "Antigua and Barbuda",
+  "Para", "Brazil",
+  "Upper James River", "USA",
+  "Rappahannock", "USA",
+  "Newcastle (Nevis)", "Saint Kitts and Nevis",
+  "St. Croix", "US Virgin Islands",
+  "St. Eustatius", "Netherlands Antilles",
+  "Saint-Domingue", "Cap-Haitien",
+  "Berbice", "Guyana",
+  "Tortola", "British Virgin Islands",
+  "Zion Hill", "Zions Hill",
+  "St. Helena", "Saint Helena",
+  "Maryland", "USA",
+  "Patuxent", "USA",
+  "Annapolis", "USA",
+  "St. Lucia", "Saint Lucia",
+  "South Potomac", "USA",
+  "Ponta Negro", "Natal",
+  "Petit-Goave", "Haiti",
+  "Cape of Good Hope", "Cape Town",
+  "Trinidad de Cuba", "Cuba",
+  "Dutch Guianas", "Guyana",
+  "Louisiana", "USA",
+  "Cuba, south coast", "Cuba",
+  "Taipu", "Brazil",
+  "Falmouth (Jam)", "Jamaica",
+  "Martha Brae", "Jamaica",
+  "Ilha Grande", "Brazil",
+  "Danish West Indies", "US Virgin Islands",
+  "Catuamo and Maria Farinha", "Brazil",
+  "Hispaniola", "Santo Domingo",
+  "Hispanioloa, unspecified", "Santo Domingo",
+  "South Carolina", "USA",
+  "North Carolina", "USA",
+  "Lower James River", "Richmond",
+  # Data becomes more of a guess here
+  "Whydah", "Benin",
+  "Congo North", "Congo",
+  "Malembo", "Angola",
+  "Cape Lahou", "Grand-Lahou",
+  "Gold Coast", "Ghana",
+  "Ardra", "Benin",
+  "Loango", "Congo",
+  "Jacquin", "Benin", # https://www.slavevoyages.org/voyage/33330/map I think?
+  "Boary", "Angola",
+  "West Central Africa and St. Helena", "West Central Africa",
+  "Badagry/Apa", "Nigeria",
+  "Kormantine", "Ghana",
+  "New Calabar", "Nigeria",
+  "Bight of Benin", "Benin",
+  "Popo", "Benin",
+  "Cess", "Liberia",
+  "Bance Island (Ben's Island)", "Sierra Leone",
+  "Apammin", "Ghana",
+  "Sierra Leone estuary", "Sierra Leone",
+  "Senegambia and offshore Atlantic", "Senegal",
+  "Portudal", "Senegal",
+  "Mpinda", "Angola",
+  "Little Popo", "Togo",
+  "Lay", "Benin",
+  "Goree", "Senegal",
+  "Christiansborg", "Ghana",
+  "Cape Mount", "Liberia",
+  "Cape Mount (Cape Grand Mount)", "Liberia",
+  "Cap Lopez", "Gabon",
+  "Cameroons River", "Cameroon",
+  "Bight of Biafra and Gulf of Guinea Islands", "Cameroon",
+  "Pokesoe (Princes Town)", "Ghana",
+  "Rio Forcados", "Nigeria", 
+  "River del Rey", "Cameroon", 
+  "Sao Tome", "Africa",
+  "Sao Tome and Principe", "Africa",
+  "Corisco", "Equatorial Guinea",
+  "Cape Coast Castle", "Ghana",
+  "St. Maarten", "Phillipsburg",
+  "Rio de la Hacha", "Colombia"
+)
+```
+
+
+
+# Functions ---------------------------------------------------------------
+```{r}
+# Strips suffixes, whitespaces and translates LUT entries
+clean_places <- function(places, place_lut = place_lut) {
+  suffixes <- c("port unspecified", "location unspecified", "colony unspecified")
+  suffixes <- c(paste0(", ", suffixes), "province")
+  suffixes <- paste0(suffixes, collapse = "|")
+  places <- gsub(suffixes, "", places)
+  places <- str_trim(places)
+  m <- match(places, place_lut$replace)
+  places[!is.na(m)] <- place_lut$by[m][!is.na(m)]
+  places
+}
+
+# Cosine similarity
+cos_sim <- function(x) {
+  x <- x / sqrt(rowSums(x * x))
+  x <- x %*% t(x)
+  x
+}
+
+# Cosine distance
+cos_dist <- function(x) {
+  as.dist(1 - cos_sim(x))
+}
+```
+
+
+
+# Data wrangling ----------------------------------------------------------
+
+# Global wrangling --------------------------------------------------------
+
+# Basically trying to convert placenames to country names.
+
+```{r}
+df <- slave_routes %>%
+  # Clean placenames
+  mutate(
+    port_origin = clean_places(port_origin, place_lut = place_lut),
+    port_arrival = clean_places(port_arrival, place_lut = place_lut),
+    place_of_purchase = clean_places(place_of_purchase,place_lut = place_lut)
+  ) %>%
+  # Try to find countries by placename
+  mutate(
+    country_origin = ifelse(port_origin %in% cities$country.etc, port_origin, 
+                            cities$country.etc[match(port_origin, cities$name)]),
+    country_arrival = ifelse(port_arrival %in% cities$country.etc, port_arrival, 
+                             cities$country.etc[match(port_arrival, cities$name)]),
+    country_purchase = ifelse(place_of_purchase %in% cities$country.etc, place_of_purchase,
+                              cities$country.etc[match(place_of_purchase, cities$name)])
+  ) %>%
+  # Replace NAs by place if country is not found
+  mutate(country_purchase = ifelse(is.na(country_purchase), place_of_purchase, country_purchase)) %>%
+  mutate(country_arrival = ifelse(is.na(country_arrival), port_arrival, country_arrival)) %>%
+  arrange(-n_slaves_arrived)
+```
+
+
+
+# Netherlands wrangling ---------------------------------------------------
+```{r}
+# Define a few patterns to counter overplotting
+
+# Arrival patterns
+carribean_patterns <- c("Caribbean", "Barbados", "Jamaica", "Haiti", 
+                        "Saint Kitts", "US Virgin", "Martinique", "Montserrat",
+                        "Tobago", "Saint Lucia", "Guadeloupe")
+carribean_patterns <- paste0(carribean_patterns, collapse = "|")
+
+# Purchase pattern
+broad_pattern <- c("Windward", "Africa") # Should catch Windward + Ivory + Gold & Africa, West Central Africa
+broad_pattern <- paste0(broad_pattern, collapse = "|")
+
+# Wrangle data for the Netherlands
+netherlands <- df %>%
+  filter(country_origin == "Netherlands" | country_arrival == 'Netherlands') %>%
+  mutate(country_arrival = ifelse(grepl(carribean_patterns, country_arrival), "Other Carribean", country_arrival)) %>%
+  mutate(country_arrival = ifelse(grepl("Guiana", country_arrival), "Guyana", country_arrival)) %>%
+  mutate(country_arrival = ifelse(grepl("unspecified", country_arrival), "Unspecified", country_arrival)) %>%
+  mutate(country_arrival = ifelse(grepl("Africa|Canary|Ghana", country_arrival), "Africa", country_arrival)) %>%
+  mutate(country_arrival = ifelse(grepl("Americas", country_arrival), "Other Americas", country_arrival)) %>%
+  mutate(country_purchase = ifelse(grepl(broad_pattern, country_purchase), "Broader\nAfrican Regions", country_purchase))
+
+# Summarise the Netherlands
+nl_countries <- netherlands %>%
+  group_by(country_purchase, country_arrival) %>%
+  summarise(slaves = sum(n_slaves_arrived, na.rm = TRUE),
+            voyages = length(unique(voyage_id))) %>%
+  drop_na() %>%
+  filter(slaves > 0) %>%
+  arrange(-slaves)
+```
+
+
+
+# Parallel sets plot ------------------------------------------------------
+```{r}
+nl_plot <- gather_set_data(nl_countries, 1:2)
+
+g <- ggplot(nl_plot, aes(x, id = id, split = y, value = slaves)) +
+  geom_parallel_sets(aes(fill = country_purchase), sep = 0.1) +
+  geom_parallel_sets_labels(colour = 'black', angle = 0, sep = 0.1) +
+  geom_parallel_sets_axes(axis.width = 0.1, sep = 0.1, colour = "white", fill = "white") +
+  scale_x_discrete(limits = c("country_purchase", "country_arrival"))
+
+label_dat <- layer_data(g, 2)
+axis_dat <- layer_data(g, 3) %>%
+  filter(!duplicated(cbind(label, xmin)))
+
+country_exchange <- ggplot(nl_plot, aes(x, id = id, split = y, value = slaves)) +
+  geom_parallel_sets(aes(fill = country_purchase, colour = country_purchase), sep = 0.1) +
+  geom_rect(data = filter(axis_dat, xmin == 0.95),
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax, 
+                fill = label, colour = label),
+            inherit.aes = FALSE) +
+  geom_rect(data = filter(axis_dat, xmin == 1.95),
+            aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
+            inherit.aes = FALSE, colour = "white", fill = "white") +
+  geom_text(data = filter(label_dat, x == 1),
+            aes(x, y, label = label),
+            inherit.aes = FALSE, hjust = 1, nudge_x = -0.07,
+            colour = "white") +
+  geom_text(data = filter(label_dat, x == 2),
+            aes(x, y, label = label),
+            inherit.aes = FALSE, hjust = 0, nudge_x = 0.07,
+            colour = "white") +
+  annotate("rect", xmin = 2.4, xmax = 2.5, ymin = 0, ymax = 1e5, fill = "white", colour = "white") +
+  annotate("text", x = 2.52, y = 5e4, label = "100.000\nArrived\nPeople", hjust = 0, colour = "white",
+           size = 3) +
+  geom_blank(data = data.frame(x = 2.6),aes(x = x), inherit.aes = FALSE) +
+  scale_fill_discrete(aesthetics = c("fill", "colour"),
+                      guide = guide_none()) +
+  scale_x_discrete(limits = c("country_purchase", "country_arrival"),
+                   labels = c("Purchase Country", "Arrival Country"),
+                   expand = c(0,0.4,0,0.7), name = "") +
+  scale_y_continuous(breaks = NULL, name = "") +
+  labs(title = "Transatlantic slavery with ships departing from <i style='color:#FF7F00'>**Dutch**</i> ports",
+       subtitle = paste0("Between the years ", paste0(range(netherlands$year_arrival), collapse = "-")),
+       caption = "Data and statistics: https://slavevoyages.org/ \n
+       City-country links: ?maps::world.cities") +
+  theme(
+    plot.background = element_rect(colour = NA, fill = "black"),
+    panel.background = element_rect(colour = NA, fill = "grey10"),
+    panel.grid.major = element_blank(),
+    plot.title = element_markdown(colour = "white"),
+    plot.subtitle = element_text(colour = "grey80"),
+    plot.caption = element_text(colour = "white", lineheight = 0.5),
+    axis.ticks = element_blank(),
+    axis.text = element_text(colour = "white", size = rel(1))
+  )
+```
+
+
+
+
+# Captains ----------------------------------------------------------------
+```{r}
+captns <- netherlands %>%
+  mutate(captains_name = strsplit(captains_name, "<br/>", fixed = TRUE)) %>%
+  unnest(captains_name) %>%
+  mutate(captains_name = str_trim(captains_name)) %>%
+  group_by(captains_name, country_arrival, country_purchase) %>%
+  summarise(slaves = sum(n_slaves_arrived, na.rm = TRUE),
+            voyages = length(unique(voyage_id))) %>%
+  filter(slaves > 0) %>%
+  arrange(-slaves) %>%
+  drop_na() %>%
+  ungroup() %>%
+  mutate(
+    country_arrival = fct_lump_min(country_arrival, 10),
+    country_purchase = fct_lump_min(country_purchase, 10)
+  )
+```
+
+
+
+# Clustering --------------------------------------------------------------
+```{r}
+# Expand for easier matrix conversion
+for_clust <- captns %>% pivot_longer(country_arrival:country_purchase) %>%
+  mutate(
+    value = paste0(ifelse(name == "country_arrival", "A_", "P_"), value)
+  )
+
+# Format as matrix
+mat <- matrix(
+  0, 
+  nrow = length(unique(for_clust$captains_name)),
+  ncol = length(unique(for_clust$value)),
+  dimnames = list(
+    unique(for_clust$captains_name),
+    unique(for_clust$value)
+  )
+)
+mat[with(for_clust, cbind(captains_name, value))] <- log10(for_clust$slaves)
+
+# Cluster captains
+clust_cap <- hclust(cos_dist(mat))
+clust_cap <- reorder(clust_cap, cos_dist(mat), "GW")
+
+# Group captains
+cut_cap <- dynamicTreeCut::cutreeDynamicTree(clust_cap, minModuleSize = 10)
+cut_cap <- setNames(cut_cap, clust_cap$labels)
+
+# Cluster countries
+clust_country <- hclust(cos_dist(t(mat)))
+
+# Set levels
+lvl_cap <- clust_cap$labels[clust_cap$order]
+lvl_country <- clust_country$labels[clust_country$order]
+lvl_country <- substr(lvl_country, 3, nchar(lvl_country))
+lvl_country <- c(lvl_country[lvl_country != "Other"], "Other")
+
+# Apply clustering levels to data
+captns <- captns %>%
+  ungroup() %>%
+  mutate(
+    captains_name = factor(captains_name, levels = lvl_cap),
+    country_arrival = factor(country_arrival, levels = lvl_country),
+    country_purchase = factor(country_purchase, levels = lvl_country),
+    cap_cut = cut_cap[as.character(captains_name)]
+  )
+
+# Choose worst captains by cluster
+worst_caps <- captns %>%
+  group_by(cap_cut) %>%
+  filter(slaves == max(slaves))
+```
+
+
+
+# Captain plot ------------------------------------------------------------
+```{r}
+pal <- hcl.colors(20, "Oslo")
+
+captain_plot <- ggplot(captns, aes(y = captains_name, fill = slaves)) +
+  geom_tile(data = cbind(captns, facet = "Purchased"),
+            aes(x = country_purchase)) +
+  geom_tile(data = cbind(captns, facet = "Arrived"),
+            aes(x = country_arrival)) +
+  facet_grid(~ facet, scales = "free", space = "free") +
+  scale_x_discrete(
+    expand = c(0,0),
+    name = "",
+    limits = function(x) {
+      lvl_country[lvl_country %in% x]
+    },
+    labels = function(x){str_wrap(x, width = 12)}
+  ) +
+  scale_y_discrete(
+    name = "", expand = c(0,0),
+    limits = function(x) {
+      lvl_cap[lvl_cap %in% x]
+    },
+    breaks = function(x) {
+      x[x %in% worst_caps$captains_name]
+    },
+    labels = function(x) {
+      # Switch first and last names
+      x <- str_split_fixed(x, ", ", 2)
+      x[] <- str_trim(x)
+      paste0(x[, 2], " ", x[, 1])
+    },
+    guide = guide_axis(check.overlap = TRUE)
+  ) +
+  scale_fill_continuous_sequential(
+    name = "People\nArrived",
+    palette = "Oslo",
+    trans = "sqrt", limits = c(0, NA)
+  ) +
+  labs(
+    title = "Infamous captains",
+    subtitle = "of the Dutch transatlantic slave trade",
+    caption = "Data and statistics: https://slavevoyages.org/"
+  ) +
+  force_panelsizes(rows = (1 + sqrt(5))/2, cols = c(1, 1), respect = TRUE) +
+  theme(
+    text = element_text(colour = "white"),
+    panel.background = element_rect(fill = pal[20], colour = NA),
+    panel.border = element_rect(fill = NA, colour = "white"),
+    strip.background = element_part_rect(
+      side = "tb", colour = pal[10], fill = pal[19]
+    ),
+    strip.text = element_text(colour = pal[1]),
+    panel.grid = element_blank(),
+    plot.background = element_rect(fill = darken(pal[20], amount = 0.8),
+                                   colour = NA),
+    legend.background = element_rect(fill = NA),
+    plot.title = element_text(colour = "white", face = "bold"),
+    plot.subtitle = element_text(face = "italic"),
+    axis.text = element_text(colour = "white"),
+    axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+    axis.ticks = element_line(colour = "white")
+  )
+```
+
+
+
+# Save plots --------------------------------------------------------------
+```{r}
+ggsave("f2020_06_16_Slavery_Captains.png", plot = captain_plot,
+       width = 8, height = 6, bg = "#010101")
+
+ggsave("2020_06_16_Slavery_Countries.png", plot = country_exchange,
+       width = 8, height = 6, bg = "black")
+```
+

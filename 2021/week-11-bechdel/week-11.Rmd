@@ -1,0 +1,267 @@
+---
+title: "week-11"
+author: "Maxwel Coura Oliveira"
+date: "3/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-03-09')
+tuesdata <- tidytuesdayR::tt_load(2021, week = 11)
+
+movies <- tuesdata$movies
+```
+
+
+```{r}
+movies_ext <- movies %>% 
+  filter(!is.na(genre)) %>% 
+  mutate(binary = ifelse(binary == "PASS", 1, 0)) %>% 
+  mutate(action = ifelse(str_detect(genre, "Action"), 1, 0)) %>% 
+  mutate(adventure = ifelse(str_detect(genre, "Adventure"), 1, 0)) %>% 
+  mutate(animation = ifelse(str_detect(genre, "Animation"), 1, 0)) %>% 
+  mutate(biography = ifelse(str_detect(genre, "Biography"), 1, 0)) %>% 
+  mutate(comedy = ifelse(str_detect(genre, "Comedy"), 1, 0)) %>% 
+  mutate(crime = ifelse(str_detect(genre, "Crime"), 1, 0)) %>% 
+  mutate(documentary = ifelse(str_detect(genre, "Documentary"), 1, 0)) %>% 
+  mutate(drama = ifelse(str_detect(genre, "Drama"), 1, 0)) %>% 
+  mutate(family = ifelse(str_detect(genre, "Family"), 1, 0)) %>% 
+  mutate(fantasy = ifelse(str_detect(genre, "Fantasy"), 1, 0)) %>% 
+  mutate(horror = ifelse(str_detect(genre, "Horror"), 1, 0)) %>% 
+  mutate(musical = ifelse(str_detect(genre, "Musical"), 1, 0)) %>% 
+  mutate(mystery = ifelse(str_detect(genre, "Mystery"), 1, 0)) %>% 
+  mutate(romance = ifelse(str_detect(genre, "Romance"), 1, 0)) %>% 
+  mutate(scifi = ifelse(str_detect(genre, "Sci-Fi"), 1, 0)) %>% 
+  mutate(thriller = ifelse(str_detect(genre, "Thriller"), 1, 0)) %>% 
+  mutate(western = ifelse(str_detect(genre, "Western"), 1, 0))
+```
+
+
+```{r}
+movies_filtered <- movies_ext %>% 
+  select(binary, action:western) %>% 
+  gather(genre, flag, -binary) %>% 
+  filter(flag == 1)
+
+movies_agg <- movies_filtered %>% 
+  group_by(genre) %>% 
+  summarise(score = mean(binary),
+            n = n()) %>% 
+  ungroup() %>% 
+  mutate(se = sqrt((score * (1 - score)) / n),
+         ci_upper = score + se * 1.96,
+         ci_lower = score - se * 1.96,
+         ci_upper90 = score + se * 1.645,
+         ci_lower90 = score - se * 1.645) %>% 
+  mutate(ci_lower = ifelse(ci_lower < 0, 0, ci_lower)) %>% 
+  mutate(ci_lower90 = ifelse(ci_lower90 < 0, 0, ci_lower90))
+```
+
+
+```{r}
+explainer <- glue::glue(paste0("<b>What is the Bechdel Test?</b><br>The Bechdel Test measures female representation in cinema.<br>For a film to pass the test, it needs to meet three criteria:<br><br>1) it has to have at least two women in it, who<br>2) talk to each other, about<br>3) something besides a man"))
+```
+
+```{r}
+library(ggtext)
+library(extrafont)
+extrafont::font_import()
+```
+
+
+```{r}
+movies_agg %>% 
+  filter(!genre %in% c("documentary")) %>% 
+  mutate(genre = str_to_title(genre)) %>% 
+  mutate(genre = reorder(genre, score)) %>% 
+  ggplot(aes(genre, score, group = 1)) +
+  # geom_image(aes(image = img), size=.05) +
+  geom_crossbar(aes(min = ci_lower90, ymax = ci_upper90, fill = score), color = "#555555") +
+  geom_crossbar(aes(min = ci_lower, ymax = ci_upper, fill = score), alpha = 0.5, color =  "#555555") +
+  geom_point(aes(color = score), size = 3) +
+  geom_label(aes(label = genre), family = "Permanent Marker", label.size = NA, color = "black", fontface = "bold") +
+  annotate("richtext", size = 5,  x = 13, y = 0, label = explainer, label.size = NA, fill = NA, color = "white",
+           family = "Raleway", hjust = 0) +
+  annotate("rect", xmin = 2, xmax = 3, ymin = .625, ymax = .775, fill = "white") +
+  annotate("rect", xmin = 2, xmax = 3, ymin = .6, ymax = .8, fill = "white", alpha = 0.5) +
+  annotate("segment", x = 2, xend = 3, y = .7, yend = .7, size = 1, color = "#555555") +
+  annotate("text", x = 3.5, y = .7, color = "white", label = "Point estimate", family = "Raleway", fontface = "bold") +
+  annotate("text", x = 1.5, y = .7, color = "white", label = "90% Confidence Interval", family = "Raleway", fontface = "bold") +
+  annotate("text", x = 1, y = .7, color = "white", label = "95% Confidence Interval", family = "Raleway", fontface = "bold") +
+  annotate("segment", x = 1.5, xend = 1.5, y = .76, yend = .775, color = "white", arrow = arrow(length = unit(0.1,"cm"))) +
+  annotate("segment", x = 1, xend = 1, y = .76, yend = .8, color = "white", arrow = arrow(length = unit(0.1,"cm"))) +
+  annotate("segment", x = 1, xend = 1, y = .64, yend = .6, color = "white", arrow = arrow(length = unit(0.1,"cm"))) +
+  annotate("segment", x = 1.5, xend = 1.5, y = .64, yend = .625, color = "white", arrow = arrow(length = unit(0.1,"cm"))) +
+  labs(title = "Percentage of films that pass the Bechdel Test by genre",
+       subtitle = "According to an analysis of 1,592 films, musicals pass the Bechdel Test most frequently, while Westerns do so just 17% of the time.",
+       x = "Genre",
+       y = "Percentage of films that pass the Bechdel Test",
+       caption = "Graphic: Joshua Feldman") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_minimal(base_size = 18) +
+  theme(axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_line(color = "#666666"),
+        panel.grid.minor.x = element_line(color = "#666666"),
+        panel.grid.major.y = element_blank(),
+        plot.title = element_text(face = "bold", hjust = 0),
+        plot.subtitle = element_text(hjust = 0, size = 17, margin = margin(0, 0, 20, 0)),
+        axis.text.x = element_text(color = "white"),
+        axis.title.x = element_text(margin = margin(20, 0, 0, 0)),
+        panel.background = element_rect(fill = "#555555", color = "#555555"),
+        plot.background = element_rect(fill = "#555555", color = "#555555"),
+        plot.caption = element_text(margin = margin(10, 0, 0, 0)),
+        text = element_text(color = "white", family = "Roboto")) +
+  guides(color = FALSE, fill = FALSE) +
+  scale_color_gradient2(high = "#71CA97", low = "#ff7f7f",
+                        midpoint = 0.5) +
+  scale_fill_gradient2(high = "#71CA97", low = "#ff7f7f",
+                       midpoint = 0.5) +
+  coord_flip()
+
+height <- 8
+
+ggsave("graphic.png", height = height, width = height * (16/9))
+```
+
+
+
+```{r}
+# --------------------------------#
+#### Tidy Tuesday: 2021 Week 11 ###
+# --------------------------------#
+
+
+# Set-up --------------------------------------------------------------------
+
+## Load packages
+library(tidyverse)
+library(skimr)
+library(hrbrthemes) # maybe a cool theme?
+hrbrthemes::import_roboto_condensed()
+library(scales)
+library(ggsci)
+library(ggtext)
+
+
+# Data --------------------------------------------------------------------
+
+## Get data
+tuesdata <- tidytuesdayR::tt_load(2021, week = 11)
+bechdel <- tuesdata$movies
+
+skim(bechdel)
+
+table(bechdel$clean_test) 
+# Bechdel test options are:
+# dubious = pass; 
+# men = women only talk about men (so there are 2 women who talk);
+# notalk = women don't talk (so there are 2 women);
+# nowomen = total fail
+# ok = pass
+
+# so order = no women - no talk - men - dubious - ok
+# From FiveThirtyEight: “dubious” means that some BechdelTest.com contributors were skeptical about whether the films in 
+# question passed the test
+
+# Bechdel test outcomes per director -----------------------------------------
+
+bechdel %>% group_by(director) %>%
+  summarize(n_movies = n()) %>% View(.)
+
+# Female directors with > 2 movies: 
+# Catherine Hardwicke (3)
+# Julie Taymor (3)
+# Nicole Holofcener (3)
+
+bechdel %>% group_by(director) %>%
+  mutate(n_movies = n()) %>%
+  filter(n_movies > 7 & !is.na(director)) %>%
+  mutate(dir_sex = "Male \n (> 7 movies)") -> male_director
+
+bechdel %>% group_by(director) %>%
+  mutate(n_movies = n()) %>%
+  filter(director %in% c("Catherine Hardwicke", "Julie Taymor", "Nicole Holofcener")) %>%
+  mutate(dir_sex = "Female \n (3 movies)") -> female_director
+
+director <- bind_rows(female_director, male_director)
+
+# Figure -----------------------------------------------------------------------
+
+#Colors inspired by: show_col(pal_startrek("uniform")(7))
+col_pal <- c("#910900","#CC0C00", "#ff6056", "#6ce2ff" ,"#00B5E2")
+
+# Order the directors by how often they pass the Bechdel test
+director %>% 
+  group_by(dir_sex, director, clean_test) %>%
+  summarize(n_bechdel = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = clean_test, values_from = n_bechdel, values_fill = 0) %>%
+  mutate(row_sum = rowSums(select(., -c(1:2)))) %>%
+  mutate_at(-c(1:2), ~ . / row_sum) %>%
+  select(-row_sum) %>%
+  pivot_longer(cols = ok:nowomen, names_to = "clean_test", values_to = "prop_score") %>%
+  filter(clean_test == "ok") %>%
+  mutate(dir = factor(director, levels = director[order(prop_score)])) %>%
+  pull(dir) %>%
+  levels -> dir_levels
+```
+
+
+```{r}
+# Create plot
+director %>% 
+  group_by(dir_sex, director, clean_test) %>%
+  summarize(n_bechdel = n()) %>%
+  ungroup() %>%
+  pivot_wider(names_from = clean_test, values_from = n_bechdel, values_fill = 0) %>%
+  mutate(row_sum = rowSums(select(., -c(1:2)))) %>%
+  mutate_at(-c(1:2), ~ . / row_sum) %>%
+  select(-row_sum) %>%
+  pivot_longer(cols = ok:nowomen, names_to = "clean_test", values_to = "prop_score") %>%
+  mutate(clean_test = factor(clean_test, levels = c('nowomen', 'notalk', 'men', 'dubious', 'ok'),
+                                                    labels = c("< two Women", "Women don't talk to each other", 
+                                                               "Women only talk about men",  
+                                                               "Dubious", "Pass")),
+         director = factor(director, levels = dir_levels)) %>%
+  ggplot(aes(x = director, y = prop_score, fill = clean_test)) +
+  geom_bar(position = "fill", stat = "identity") +
+  scale_fill_manual(values = col_pal,
+                    name = element_blank(),
+                    guide = guide_legend(reverse = TRUE)) +
+  scale_x_discrete(limits = rev) +
+  coord_flip() +
+  facet_grid(rows = vars(dir_sex), scales = "free", space = "free", as.table = FALSE) +
+  theme_minimal(base_family = "Roboto Condensed") +
+  theme(
+    rect = element_rect(fill = "#F5F5F5"),
+    panel.background = element_rect(fill = "#F5F5F5", color = "#F5F5F5"),
+    plot.background = element_rect(fill = "#F5F5F5", color = "#F5F5F5"),
+    legend.position = "bottom",
+    legend.justification = "left",
+    legend.text = element_text(size = 8),
+    plot.caption = element_markdown(family = "Roboto Condensed", colour = "#7C878EFF"),
+    plot.title = element_text(size = 16)
+  ) +
+  labs(
+    x = "",
+    y = "Proportion",
+    caption = "@winterstat | #TidyTuesday | Data: [FiveThirtyEight]",
+    title = "Which Directors Make Movies that Pass the Bechdel Test?",
+    subtitle = "Comparing male directors with > 7 movies to the three female directors with the\nhighest number of movies (released prior to 2014) in the Bechdel test database."
+  )
+
+# Save plot
+ggsave("TT_week11.png", type = 'cairo', width = 7, height = 8, dpi = 300, units = "in")
+```
+

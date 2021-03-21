@@ -1,0 +1,74 @@
+---
+title: "week-9"
+author: "Maxwel Coura Oliveira"
+date: "2/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 9)
+```
+
+```{r}
+earn <- tuesdata$earn
+employed <- tuesdata$employed
+```
+```{r}
+race <- earn %>% 
+  filter(sex %in% c("Men", "Women")) %>% 
+  filter(race != "All Races") %>% 
+  dplyr::select(-ethnic_origin)
+
+origin <- earn %>% 
+  filter(sex %in% c("Men", "Women")) %>% 
+  filter(ethnic_origin == "Hispanic or Latino") %>% 
+  dplyr::select(-race) %>% 
+  rename(race = ethnic_origin)
+
+data <- bind_rows(race, origin)
+```
+
+```{r}
+earn %>% 
+  filter(sex %in% c("Men", "Women") & ethnic_origin == "All Origins") %>%
+  filter(quarter == 4 & year == 2020) %>% 
+  ggplot(aes(x = fct_inorder(age), y = sex, fill = median_weekly_earn)) +
+  geom_tile() +
+  coord_flip()
+```
+
+
+
+```{r}
+earn %>% 
+  distinct(sex, race, ethnic_origin, age)
+```
+
+
+```{r}
+employed %>% 
+  mutate_if(is_character, as_factor) %>% 
+  ggplot(aes(x = year, y = employ_n, fill = race_gender)) +
+  geom_col(position = "fill")
+```
+
+
+```{r}
+earn %>% 
+  filter(sex %in% c("Men", "Women"),
+         race != "All Races") %>% 
+  mutate_if(is_character, as_factor) %>% 
+  ggplot(aes(x = year, y = median_weekly_earn, fill = age, group = age)) +
+  geom_contour() +
+  facet_grid(~ race)
+```
+
