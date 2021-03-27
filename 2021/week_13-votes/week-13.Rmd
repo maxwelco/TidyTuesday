@@ -1,0 +1,110 @@
+---
+title: "week-13"
+author: "Maxwel Coura Oliveira"
+date: "3/27/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggthemes)
+library(ggtext)
+library(tvthemes)
+```
+
+```{r}
+#tuesdata <- tidytuesdayR::tt_load('2021-03-23')
+tuesdata <- tidytuesdayR::tt_load(2021, week = 13)
+
+unvotes <- tuesdata$unvotes
+roll_calls <- tuesdata$roll_calls
+issues <- tuesdata$issues
+```
+```{r}
+unvotes1 <- unvotes %>% 
+  left_join(roll_calls, by = "rcid") %>% 
+  left_join(issues, by = "rcid")
+```
+
+
+```{r}
+unvotes1 %>% 
+  distinct(country, country_code) %>% 
+  arrange(country)
+```
+
+
+```{r}
+unvotes2 <- unvotes1 %>% 
+  filter(issue == "Human rights") %>% 
+#  filter(str_detect(short, "HUMAN")) %>% 
+  filter(country %in% c("Paraguay", "Colombia", 
+                        "Brazil", "Bolivia",
+                        "Chile", "Uruguay",
+                        "Ecuador", "Venezuela",
+                        "Guyana", "Argentina",
+                        "Peru", "Suriname")) %>% 
+  mutate(vote = fct_relevel(vote, levels = c("yes", "abstain", "no")))
+```
+
+
+
+
+```{r}
+library(extrafont)
+#loadfonts()
+
+background <- "#1D1D1D"
+text_colour <- "white"
+title <- "#f5f5dc"
+
+theme_style <- theme(legend.position = "bottom",
+                     plot.title = element_text(family = "Arial Black", size = 16,
+                                               color = title),
+                     plot.background = element_rect(fill = background, color = NA),
+                     text = element_text(family = "Arial Black", color = title),
+                     plot.subtitle = element_text(margin = margin(5, 0, 5, 0), size = 10,
+                                                  color = title),
+                     plot.caption = element_text(size = 7),
+                     strip.text = element_text(margin = margin(1, 0, 1, 0))
+                    
+                     )
+
+
+theme_set(theme_void() + theme_style)
+```
+
+
+```{r}
+unvotes2 %>% 
+ggplot(aes(x = date, fill = vote)) +
+  geom_density(position = "fill", alpha = 1/2) +
+  scale_fill_manual(name = "", values = c("#80FF00", "#FFFF00", "#FF8000")) +
+  scale_y_continuous(n.breaks = 4, 
+                     labels = scales::percent_format(scale = 100)) +
+  facet_wrap(~ country) +
+  labs(title = "Human rights votes of South America countries",
+       subtitle = "% of voting changes in the UN General Assembly from 1946 to 2019",
+       y = "% votes", x = "",
+       caption = "Source: UN Votes - Erik Voeten | Figure: @maxwelco") +
+  
+  
+  ggsave("south_america.png")
+```
+
+
+
+
+
+
+
+
+
+
+
+
