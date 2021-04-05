@@ -1,0 +1,42 @@
+---
+title: "week-15"
+author: "Maxwel Coura Oliveira"
+date: "4/5/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 15)
+
+forest_change <- tuesdata$forest_change
+forest_area <- tuesdata$forest_area
+brazil_loss <- tuesdata$brazil_loss
+soybean_use <- tuesdata$soybean_use
+vegetable_oil <- tuesdata$vegetable_oil
+```
+
+
+```{r}
+library(ggsankey)
+library(dplyr)
+library(ggplot2)
+```
+
+geom_parallel_sets
+
+```{r}
+df <- mtcars %>%
+  make_long(cyl, vs, am, gear, carb)
+
+ggplot(df, aes(x = x, 
+               next_x = next_x, 
+               node = node, 
+               next_node = next_node,
+               fill = factor(node))) +
+  geom_sankey()
+```
+
