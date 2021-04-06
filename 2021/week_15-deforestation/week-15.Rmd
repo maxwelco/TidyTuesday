@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 tuesdata <- tidytuesdayR::tt_load(2021, week = 15)
 
-forest_change <- tuesdata$forest_change
+forest_change <- tuesdata$forest
 forest_area <- tuesdata$forest_area
 brazil_loss <- tuesdata$brazil_loss
 soybean_use <- tuesdata$soybean_use
@@ -21,10 +21,70 @@ vegetable_oil <- tuesdata$vegetable_oil
 
 
 ```{r}
-library(ggsankey)
 library(dplyr)
 library(ggplot2)
+library(ggrepel)
+library(ggthemes)
+library(ggtext)
 ```
+
+
+```{r}
+options(scipen = 999)
+forest_change %>%
+  group_by(entity) %>% 
+  summarise(net_forest_conversion = sum(net_forest_conversion)) %>% 
+  mutate(highlight = if_else(entity %in% c("Brazil", "China"), TRUE, FALSE),
+         variable_col = if_else(highlight == TRUE, entity, "NA")) %>% 
+  filter(entity != "World") %>% 
+  ggplot(aes(x = reorder(entity, net_forest_conversion), y = net_forest_conversion, 
+              fill = variable_col, label = entity)) +
+  geom_col() + 
+  geom_label_repel(box.padding   = 0.5, 
+                  point.padding = 0.2) +
+  scale_fill_manual(values = c("#009C3B", "#FF0000", "#9c9c8d")) +
+  labs(x = "", y = "Net forest conversion in hectares") +
+  theme_void() +
+  theme(legend.position = "none",
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank())
+```
+
+
+
+
+```{r}
+bra_forest_area <- forest_area %>% 
+  filter(code == "BRA") 
+
+bra_forest_change <- forest_change %>% 
+  filter(code== "BRA")
+
+bra_soybean_use <- soybean_use %>% 
+  filter(code== "BRA")
+
+brazil_loss
+
+bra_vegetable_oil <- vegetable_oil %>% 
+  filter(code== "BRA")
+```
+
+
+```{r}
+brazil_data <- brazil_loss %>% 
+  right_join(forest_area, by = c("entity", "code", "year")) %>% 
+  left_join(forest_change, by = c("entity", "code", "year")) %>% 
+  left_join(soybean_use, by = c("entity", "code", "year")) %>% 
+  left_join(vegetable_oil, by = c("entity", "code", "year"))
+```
+
+
+```{r}
+brazil_data %>% 
+  pivot_longer(cols = commercial_crops:small_scale_clearing, names_to = "type", values_to = "forest_loss") %>% 
+  pivot_longer(cols = human_food:processed, names_to = "soybean_use", values_to = "soybean_use_ha")
+```
+
 
 geom_parallel_sets
 

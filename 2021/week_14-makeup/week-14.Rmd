@@ -5,16 +5,143 @@ date: "4/2/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+The data this week comes from [The Pudding](https://github.com/the-pudding/data/tree/master/foundation-names). [This article](https://pudding.cool/2021/03/foundation-names) contains an in-depth analysis of the data with brilliant interactive visualisations.
 
 
 ```{r}
-tuesdata <- tidytuesdayR::tt_load(2021, week = 14)
+# Load in packages
+library(tidytuesdayR)
+library(tidyverse)
+library(patchwork)
+library(here)
+library(tidytext)
+library(waffle)
+library(showtext)
+showtext_auto()
 ```
 
-```{r}
-sephora <- tuesdata$sephora
+
+```{r load in data}
+allCategories <- read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-03-30/allCategories.csv')
 ```
 
+```{r categorise lightness}
+# bin lightness into 6 groups 
+category <- allCategories %>%
+  separate_rows(categories, convert = TRUE) %>%
+  mutate(categories = fct_reorder(categories, lightness)) %>%
+  mutate(lightness_cat = cut_interval(lightness, 6)) %>%
+  filter(!categories %in% c("sand", "descriptor", "misc", "color", "name")) %>%
+  droplevels() %>%
+  select(name, categories, hex, lightness, lightness_cat)
+  
+# obtain hex codes for each lightness bin
+cat_plot <- category %>%
+  group_by(lightness_cat) %>%
+  filter(lightness == range(lightness)) %>%
+  select(lightness_cat, lightness, hex) %>%
+  unique()
+# plot hex colours
+colors <- cat_plot$hex
+names(colors) <- cat_plot$hex
+cat_plot %>%
+  group_by(lightness_cat) %>%
+  mutate(number = row_number(hex)) %>%
+  ggplot() +
+  aes(y = number , x = lightness_cat, fill = hex) +
+  geom_tile() +
+  scale_fill_manual(values = colors) +
+  geom_text(aes(label = hex)) +
+  theme_void() +
+    theme(legend.position = "none", 
+          axis.text = element_text())
+# Pull hex codes for each lightness category
+lightness_cat_hex <- cat_plot %>%
+  group_by(lightness_cat) %>%
+  arrange(lightness_cat) %>%
+  slice_min(lightness, n = 1, with_ties = F) %>%
+  pull(hex)
+```
+
+
+
+```{r set plot theme}
+# set colours and fonts
+bckground_col <- "#272d36"
+text_col <- "#F0C8B3"
+font_name <- "Josefin Sans Medium"
+# set theme
+theme_set(theme_void(base_family = font_name))
+theme_update(strip.text = element_text(family = font_name, 
+                                 margin = margin(.1, 0, .1, 0, "cm"),
+                                 colour = text_col, 
+                                 face = "bold", 
+                                 size = 12),
+       panel.background = element_rect(fill = "#404a59",
+                                       colour = NA),
+       panel.spacing.x = unit(2, "lines"),
+       plot.background = element_rect(fill = bckground_col, 
+                                      colour = NA),
+       plot.margin = margin(.1, .6, 0.1, .6, "cm"),
+       plot.title = element_text(family = font_name, 
+                                 colour = text_col, 
+                                 hjust = 0.5, size = 12),
+       plot.subtitle = element_text(family = font_name, 
+                                    colour = "grey65", 
+                                    hjust = 0.5),
+       plot.caption = element_text(family = font_name, 
+                                   colour = text_col, 
+                                   hjust = 1),
+       legend.position = "none",
+       legend.text = element_text(colour = text_col),
+       legend.title = element_text(colour = text_col)
+)
+```
+
+
+```{r waffle plots by category}
+waffle_facet <- category %>%
+  group_by(lightness_cat, categories) %>%
+  count() %>%
+  ggplot() +
+  geom_waffle(aes(values = n, fill = lightness_cat), 
+              make_proportional = T, 
+              colour = bckground_col) +
+  scale_fill_manual(values = lightness_cat_hex) +
+  facet_wrap(~categories) +
+  coord_equal()
+```
+
+```{r waffle plot total}
+#obtain counts of each lightness category in total 
+total_category_count <- category %>%
+        group_by(lightness_cat) %>%
+        count() %>%
+        mutate(categories = as.factor("total")) 
+# waffle plot
+total_waffle <- total_category_count %>%
+  ggplot() +
+  geom_waffle(aes(values = n, fill = lightness_cat), 
+              make_proportional = T, 
+              colour = bckground_col) +
+  scale_fill_manual(values = lightness_cat_hex) +
+  labs(title = "total") +
+  coord_equal() +
+  theme(plot.margin = margin(.1, .6, 1.1, .6, "cm"))
+```
+
+
+```{r patchwork, fig.width = 7, fig.height = 9.2}
+makeup_plot <- waffle_facet/total_waffle +
+  plot_layout(heights = c(4, 1.1),
+              guides="collect")  +
+  plot_annotation(title = "\nMake Up Foundation Names",
+                  subtitle = "\nFoundation names of 5000+ shades from leading beauty brands have been compiled by\nThe Pudding and assigned categories. This visualisation shows the relative proportions of\nlight and dark shades in each category and in total. Notice that darker tones are over\nrepresented in wood & drink, and lighter shades dominate the gem & plant categories.\n \n \nCategories are ordered by average lightness of shade, from darkest to lightest.\n",
+                  theme = theme(plot.title = element_text(size = 29, 
+                                                          family = "Abril Fatface", 
+                                                          hjust = 0),
+                                plot.subtitle = element_text(hjust = 0,
+                                                             family = "Josefin Sans Light",
+                                                             size = 12)))
+ggsave("beauty_bias_plot.png", makeup_plot, width = 7, height = 9.2)
+```
