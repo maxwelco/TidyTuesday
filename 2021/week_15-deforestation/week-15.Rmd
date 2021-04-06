@@ -21,9 +21,16 @@ vegetable_oil <- tuesdata$vegetable_oil
 
 
 ```{r}
+forest_change %>% 
+  distinct(entity)
+```
+
+
+```{r}
 library(dplyr)
 library(ggplot2)
 library(ggrepel)
+library(tidyverse)
 library(ggthemes)
 library(ggtext)
 ```
@@ -36,7 +43,7 @@ forest_change %>%
   summarise(net_forest_conversion = sum(net_forest_conversion)) %>% 
   mutate(highlight = if_else(entity %in% c("Brazil", "China"), TRUE, FALSE),
          variable_col = if_else(highlight == TRUE, entity, "NA")) %>% 
-  filter(entity != "World") %>% 
+  filter(!entity %in% "World") %>% 
   ggplot(aes(x = reorder(entity, net_forest_conversion), y = net_forest_conversion, 
               fill = variable_col, label = entity)) +
   geom_col() + 
@@ -50,8 +57,22 @@ forest_change %>%
         axis.ticks = element_blank())
 ```
 
+```{r}
+soybean_use %>% 
+  filter(code %in% c("BRA", "CHN")) %>% 
+  pivot_longer(cols = human_food:processed, names_to = "soybean_use",
+               values_to = "value") %>% 
+  group_by(year, entity) %>% 
+  mutate(sum = sum(value),
+         perc = value / sum * 100)  %>% 
+  ggplot(aes(x = year, y = perc, fill = soybean_use)) +
+  geom_col() +
+  facet_grid(~ entity)
+```
 
-
+  
+  geom_point() +
+  facet_grid(~ entity)
 
 ```{r}
 bra_forest_area <- forest_area %>% 
@@ -60,8 +81,8 @@ bra_forest_area <- forest_area %>%
 bra_forest_change <- forest_change %>% 
   filter(code== "BRA")
 
-bra_soybean_use <- soybean_use %>% 
-  filter(code== "BRA")
+brachn_soybean_use <- soybean_use %>% 
+  filter(code %in% "BRA")
 
 brazil_loss
 
