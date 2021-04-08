@@ -20,10 +20,7 @@ vegetable_oil <- tuesdata$vegetable_oil
 ```
 
 
-```{r}
-forest_change %>% 
-  distinct(entity)
-```
+
 
 
 ```{r}
@@ -32,51 +29,164 @@ library(ggplot2)
 library(ggrepel)
 library(tidyverse)
 library(ggthemes)
+library(treemapify)
 library(ggtext)
 ```
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+
+font_add_google("Noto Sans JP", "noto_jp")
+font_add_google("Aclonica", "aclonica")
+```
+
 
 
 ```{r}
 options(scipen = 999)
-forest_change %>%
+forest_change1 <- forest_change %>%
   group_by(entity) %>% 
   summarise(net_forest_conversion = sum(net_forest_conversion)) %>% 
   mutate(highlight = if_else(entity %in% c("Brazil", "China"), TRUE, FALSE),
          variable_col = if_else(highlight == TRUE, entity, "NA")) %>% 
-  filter(!entity %in% "World") %>% 
-  ggplot(aes(x = reorder(entity, net_forest_conversion), y = net_forest_conversion, 
-              fill = variable_col, label = entity)) +
-  geom_col() + 
-  geom_label_repel(box.padding   = 0.5, 
-                  point.padding = 0.2) +
-  scale_fill_manual(values = c("#009C3B", "#FF0000", "#9c9c8d")) +
-  labs(x = "", y = "Net forest conversion in hectares") +
-  theme_void() +
-  theme(legend.position = "none",
-        axis.text.x = element_blank(),
-        axis.ticks = element_blank())
+  filter(!entity %in% "World") 
 ```
 
+
+
+
+
+
 ```{r}
-soybean_use %>% 
-  filter(code %in% c("BRA", "CHN")) %>% 
-  pivot_longer(cols = human_food:processed, names_to = "soybean_use",
-               values_to = "value") %>% 
+main <- forest_change1 %>%
+ggplot(aes(x = reorder(entity, net_forest_conversion), y = net_forest_conversion, 
+              fill = variable_col, label = entity)) +
+  geom_col() + 
+  annotate("rect", xmin = 66, xmax = 132, ymin = 0, ymax = 11000000,
+  alpha = .05, fill = "#00FF00") +
+  annotate("rect", xmin = 0, xmax = 66, ymin = 0, ymax = -11000000,
+  alpha = .05, fill = "#FF0000") +
+  geom_label_repel(box.padding   = 0.5, 
+                  point.padding = 0.2,
+                  max.overlaps = 2) +
+  scale_fill_manual(values = c("#009C3B", "#FF0000", "#9c9c8d")) +
+  labs(title = "Net forest conversion in hectares",
+       subtitle = "Brazil and China lead net forest conversion in opposite ways", caption = "Source: Our World in Data | Figure: @maxwelco",
+       x = "", y = "") +
+  theme_test() +
+  ylim(-11000000, 11000000) +
+  theme(legend.position = "none",
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank(),
+        text = element_text(family = "noto_jp"),
+        plot.title = element_markdown(size = 20, family = "aclonica",
+                                      margin = margin(3, 0, 3, 0)),
+        plot.caption = element_markdown(size = 7, 
+                                        family = "aclonica"))
+  
+  ggsave("net_conversion.pdf")
+```
+
+
+
+
+
+
+```{r}
+sub1 <- brazil_loss %>% 
+  filter(code %in% c("BRA")) %>% 
+  pivot_longer(cols = commercial_crops:small_scale_clearing, 
+               names_to = "types",  values_to = "value") %>%
+  mutate(types = fct_recode(types,
+                            "Pasture" = "pasture",
+                            "Crops" =  "commercial_crops",
+                            "Fire" = "fire",
+                            "Roads" = "roads",
+                            "Tree plantations" = "tree_plantations_including_palm",
+                            "Small scale clearing" = "small_scale_clearing",
+                            "Natural disturbance" = "natural_disturbances",
+                            "Mining" = "mining",
+                            "Other infrastructure" = "other_infrastructure",
+                            "Selective logging" = "selective_logging")) %>% 
+  filter(year == 2001) %>% 
+  ggplot(aes(area = value, fill = types, label = types)) +
+  geom_treemap() +
+  labs(subtitle = "In 2013, forest loss in Brazil was largely due to Pasture") +
+  geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
+                    grow = TRUE, min.size = 0) +
+  scale_fill_brewer(palette = "Paired") +
+  theme(legend.position = "none")
+sub1
+```
+
+
+inset_element(sub1, left = 0.15, bottom = 0.5, 
+                     right = 0.56, top = 0.9, align_to = 'full')
+```{r}
+#library(patchwork)
+join <- main + inset_element(sub1, left = 0.55, bottom = 0.1, right = 0.99, top = 0.48, 
+                   on_top = TRUE, align_to = 'full')
+
+#join 
+ggsave("figure.png", join, width = 9, height = 5)
+```
+
+
+
+
+```{r}
+brazil_loss %>% 
+  filter(code %in% c("BRA")) %>% 
+  pivot_longer(cols = commercial_crops:small_scale_clearing, 
+               names_to = "types",  values_to = "value") %>% 
+  mutate(types = if_else(value < 100000, 
+                         "Other", types)) %>% 
   group_by(year, entity) %>% 
   mutate(sum = sum(value),
          perc = value / sum * 100)  %>% 
-  ggplot(aes(x = year, y = perc, fill = soybean_use)) +
+
+  ggplot(aes(x = year, y = perc, fill = types)) +
   geom_col() +
   facet_grid(~ entity)
 ```
 
-  
-  geom_point() +
-  facet_grid(~ entity)
+
+```{r}
+
+```
+
+```{r}
+forest_area %>%
+  group_by(year, entity) %>% 
+  summarise(sum(forest_area))
+```
+
+
+```{r}
+forest_area %>% 
+  filter(code %in% c("BRA", "CHN")) %>% 
+  ggplot(aes(x = year, y = forest_area, color = entity)) +
+  ylim(0,14) +
+  geom_line() +
+  geom_point()
+```
+
+```{r}
+forest_area %>% 
+  filter(code %in% c("CHN")) %>% 
+  ggplot(aes(x = year, y = forest_area)) +
+  geom_line() +
+  geom_point()
+```
+
+
+
 
 ```{r}
 bra_forest_area <- forest_area %>% 
-  filter(code == "BRA") 
+  filter(code %in% c("BRA", "CHN"))  
 
 bra_forest_change <- forest_change %>% 
   filter(code== "BRA")
