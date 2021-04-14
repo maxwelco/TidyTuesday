@@ -28,6 +28,7 @@ library(dplyr)
 library(ggplot2)
 library(ggrepel)
 library(tidyverse)
+library(patchwork)
 library(ggthemes)
 library(treemapify)
 library(ggtext)
@@ -75,16 +76,13 @@ ggplot(aes(x = reorder(entity, net_forest_conversion), y = net_forest_conversion
   labs(title = "Net forest conversion in hectares",
        subtitle = "Brazil and China lead net forest conversion in opposite ways", caption = "Source: Our World in Data | Figure: @maxwelco",
        x = "", y = "") +
-  theme_test() +
-  ylim(-11000000, 11000000) +
+  theme_void() +
   theme(legend.position = "none",
-        axis.text.x = element_blank(),
-        axis.ticks = element_blank(),
         text = element_text(family = "noto_jp"),
         plot.title = element_markdown(size = 20, family = "aclonica",
                                       margin = margin(3, 0, 3, 0)),
         plot.caption = element_markdown(size = 7, 
-                                        family = "aclonica"))
+                                        family = "aclonica")) +
   
   ggsave("net_conversion.pdf")
 ```
@@ -122,12 +120,34 @@ sub1
 ```
 
 
-inset_element(sub1, left = 0.15, bottom = 0.5, 
-                     right = 0.56, top = 0.9, align_to = 'full')
+```{r}
+sub2 <- forest_area %>% 
+  filter(year %in% c(1990, 2020)) %>% 
+  mutate(highlight = if_else(entity %in% c("Brazil", "China"), TRUE, FALSE),
+         variable_col = if_else(highlight == TRUE, entity, "NA")) %>% 
+  ggplot(aes(x = year, y = forest_area, label = entity, group = entity)) +
+  ylim(0,14) +
+  geom_line(aes(color = variable_col)) +
+  geom_point(aes(color = variable_col)) +
+  scale_color_manual(values = c("#009C3B", "#FF0000", "#e5e5e5")) +
+  annotate("text", x = 2005, y = 9, size = 3,
+           label = "In 30 years, % of global forest area in Brazil reduced from 13.9 to 12.2 \nbut China increase from from 3.7 to 5.41") +
+  theme_void() +
+  theme(legend.position = "none")
+
+sub2
+```
+
+
+
+
 ```{r}
 #library(patchwork)
 join <- main + inset_element(sub1, left = 0.55, bottom = 0.1, right = 0.99, top = 0.48, 
-                   on_top = TRUE, align_to = 'full')
+                   on_top = TRUE, align_to = 'full') +
+  inset_element(sub2, left = 0.10, bottom = 0.5, 
+                     right = 0.56, top = 0.85, align_to = 'full')
+  
 
 #join 
 ggsave("figure.png", join, width = 9, height = 5)
@@ -135,99 +155,4 @@ ggsave("figure.png", join, width = 9, height = 5)
 
 
 
-
-```{r}
-brazil_loss %>% 
-  filter(code %in% c("BRA")) %>% 
-  pivot_longer(cols = commercial_crops:small_scale_clearing, 
-               names_to = "types",  values_to = "value") %>% 
-  mutate(types = if_else(value < 100000, 
-                         "Other", types)) %>% 
-  group_by(year, entity) %>% 
-  mutate(sum = sum(value),
-         perc = value / sum * 100)  %>% 
-
-  ggplot(aes(x = year, y = perc, fill = types)) +
-  geom_col() +
-  facet_grid(~ entity)
-```
-
-
-```{r}
-
-```
-
-```{r}
-forest_area %>%
-  group_by(year, entity) %>% 
-  summarise(sum(forest_area))
-```
-
-
-```{r}
-forest_area %>% 
-  filter(code %in% c("BRA", "CHN")) %>% 
-  ggplot(aes(x = year, y = forest_area, color = entity)) +
-  ylim(0,14) +
-  geom_line() +
-  geom_point()
-```
-
-```{r}
-forest_area %>% 
-  filter(code %in% c("CHN")) %>% 
-  ggplot(aes(x = year, y = forest_area)) +
-  geom_line() +
-  geom_point()
-```
-
-
-
-
-```{r}
-bra_forest_area <- forest_area %>% 
-  filter(code %in% c("BRA", "CHN"))  
-
-bra_forest_change <- forest_change %>% 
-  filter(code== "BRA")
-
-brachn_soybean_use <- soybean_use %>% 
-  filter(code %in% "BRA")
-
-brazil_loss
-
-bra_vegetable_oil <- vegetable_oil %>% 
-  filter(code== "BRA")
-```
-
-
-```{r}
-brazil_data <- brazil_loss %>% 
-  right_join(forest_area, by = c("entity", "code", "year")) %>% 
-  left_join(forest_change, by = c("entity", "code", "year")) %>% 
-  left_join(soybean_use, by = c("entity", "code", "year")) %>% 
-  left_join(vegetable_oil, by = c("entity", "code", "year"))
-```
-
-
-```{r}
-brazil_data %>% 
-  pivot_longer(cols = commercial_crops:small_scale_clearing, names_to = "type", values_to = "forest_loss") %>% 
-  pivot_longer(cols = human_food:processed, names_to = "soybean_use", values_to = "soybean_use_ha")
-```
-
-
-geom_parallel_sets
-
-```{r}
-df <- mtcars %>%
-  make_long(cyl, vs, am, gear, carb)
-
-ggplot(df, aes(x = x, 
-               next_x = next_x, 
-               node = node, 
-               next_node = next_node,
-               fill = factor(node))) +
-  geom_sankey()
-```
 

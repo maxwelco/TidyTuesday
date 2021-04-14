@@ -1,0 +1,25 @@
+---
+title: "week-16"
+author: "Maxwel Coura Oliveira"
+date: "4/14/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+#tuesdata <- tidytuesdayR::tt_load('2021-04-13')
+tuesdata <- tidytuesdayR::tt_load(2021, week = 16)
+```
+
+
+```{r}
+post_offices <- tuesdata$post_offices
+```
+
+```{r}
+post_offices 
+```
+
