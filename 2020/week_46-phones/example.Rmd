@@ -18,6 +18,10 @@ library(systemfonts)
 library(ggtext)
 library(ggsci)
 library(pdftools)
+library(showtext)
+showtext_auto()
+
+
 theme_set(theme_void(base_family = "Roboto Condensed", base_size = 9))
 theme_update(
   axis.text.x = element_text(color = "grey60", margin = margin(t = 4)),
@@ -40,6 +44,10 @@ df_mobile <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/
 df_countries <- 
   ne_countries(scale = 110, returnclass = "sf") %>% 
   as_tibble()
+```
+
+
+```{r prep-data}
 df_mobile_sub <-
   df_mobile %>% 
   filter(year < max(year)) %>% 
@@ -60,6 +68,10 @@ df_mobile_sub <-
     subregion = str_replace(subregion, "\\band\\b", "&")
   ) %>% 
   ungroup
+```
+
+
+```{r prep-data}
 df_mobile_end <-
   df_mobile_sub %>% 
   filter(year == max(year)) %>% 
@@ -71,6 +83,10 @@ df_mobile_end <-
   ungroup %>% 
   mutate(id_sort = row_number()) %>% 
   dplyr::select(subregion, id_sort, end_cont, end_sub)
+```
+
+
+```{r prep-data}
 df_mobile_fct <-
   df_mobile_sub %>% 
   left_join(df_mobile_end, by = c("subregion")) %>% 
@@ -193,7 +209,7 @@ ggplot(
 
 ```{r convert-to-png}
 ## convert PDF to PNG
-path <- here::here("plots", "2020_46", "2020_46_HistoricalPhones")
+path <- here::here("2020", "week_46-phones", "2020_46_HistoricalPhones")
 ggsave(glue::glue("{path}.pdf"), width = 12, height = 9.5, device = cairo_pdf)
 pdf_convert(pdf = glue::glue("{path}.pdf"), 
             filenames = glue::glue("{path}.png"),

@@ -10,6 +10,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+library(tidyverse)
+```
+
+
+```{r}
 #tuesdata <- tidytuesdayR::tt_load('2021-04-13')
 tuesdata <- tidytuesdayR::tt_load(2021, week = 16)
 ```
@@ -20,6 +25,8 @@ post_offices <- tuesdata$post_offices
 ```
 
 ```{r}
-post_offices 
+post_offices %>% 
+  ggplot(aes(x = longitude, y = latitude)) +
+  geom_point()
 ```
 
