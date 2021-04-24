@@ -1,0 +1,112 @@
+---
+title: "week_17"
+author: "Maxwel Coura Oliveira"
+date: "4/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 17)
+```
+
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(ggtext)
+```
+
+
+```{r}
+netflix <- tuesdata$netflix
+```
+
+```{r}
+netflix %>% 
+  mutate(date_added = mdy(date_added)) %>% 
+  mutate(year_added = year(date_added)) %>% 
+  mutate(years = year_added - release_year) -> netflix1
+```
+```{r}
+netflix1 %>% 
+  filter(release_year < 1930)
+```
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Bebas Neue", "bebas")
+font_add_google("Roboto Condensed", "roboto")
+```
+
+
+
+```{r}
+family_text <- "bebas"
+text_colour <- "white"
+background <- "#E50914"
+title <- "#1D1D1D"
+red2_netflix <- "#E50914"
+red_netflix <- "#db0000"
+black_netflix <- "#000000"
+white_netflix  <- "#ffffff"
+grey_netflix <- "#564d4d"
+darkred_netflix <- 	"#831010"
+netflix_logo <- "<img src='https://logodownload.org/wp-content/uploads/2014/10/netflix-logo-5.jpg' width='120'/>"
+
+theme_style <- theme(legend.position = "bottom",
+                     legend.text = element_markdown(),
+                     panel.background = element_rect(fill = "#564d4d"),
+                     panel.grid = element_blank(),
+                     axis.text = element_markdown(size = 11, family = family_text),
+                     axis.title = element_markdown(size = 13, family = family_text, 
+                                                   color = red2_netflix),
+                     plot.title = element_markdown(size = 18, 
+                                                   margin = margin(3, 0, 3, 0),
+                                                          family = family_text),
+                     plot.subtitle = element_markdown(size = 14, hjust = 0.5,
+                                                      family = family_text,
+                                                  color = title),
+                     plot.caption = element_markdown(size = 6, family = family_text, hjust = 1,
+                                                     color = grey_netflix),
+                     strip.background = element_blank(),
+                     strip.text = element_textbox(
+                     size = 14,
+                     family = family_text,
+                     color = white_netflix, 
+                     fill = red2_netflix, 
+                     box.color = red2_netflix,
+                     halign = 0.5, linetype = 1, 
+                     r = unit(0, "pt"), 
+                     width = unit(1, "npc"),
+                     padding = margin(2, 0, 1, 0), margin = margin(3, 3, 3, 3)
+                     ))
+
+theme_set(theme_style)
+```
+
+
+```{r warning = FALSE}
+netflix1 %>% 
+  ggplot(aes(x = date_added, y = release_year)) +
+  geom_hex() +
+  scale_fill_gradient2(low = white_netflix,
+                     high = red_netflix) +
+  coord_flip() +
+  labs(y = "Actual year of release",
+       x = "Date added to Netflix",
+       title = netflix_logo,
+       subtitle = "A comparison of date added vs actual release year of Netflix movie / TV show",
+       caption = "Source: Kaggle | Figure: @maxwelco") +
+  theme(legend.position = "none") +
+  facet_grid(~ type) +
+  ggsave("fig.png", width = 7, height = 7, dpi = 600)
+```
+
+
