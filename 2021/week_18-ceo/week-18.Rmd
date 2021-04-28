@@ -65,7 +65,7 @@ departures1 %>%
   labs(x = "", y = "",
        title = "CEO Departures",
        subtitle = "Monthly distribution of reasons for CEO departure in S&P 1500 firms from 1980 through 2021",
-       caption = "Source: Gentry et al. | Figure: @maxwelco") +
+       caption = "Source: Gentry et al. (2021) | Figure: @maxwelco") +
   theme_solarized_2() +
   scale_fill_solarized() +
   scale_color_solarized() +
