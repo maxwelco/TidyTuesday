@@ -9,6 +9,8 @@ output: html_document
 ```{r}
 library(tidyverse)
 library(PupillometryR)
+library(ggthemes)
+library(lubridate)
 ```
 
 
@@ -21,39 +23,68 @@ departures <- tuesdata$departures
 ```
 
 ```{r}
+departures %>% 
+  arrange(leftofc)
+```
+
+```{r}
+library(extrafont)
+library(ggtext)
+library(showtext)
+showtext_auto()
+font_add_google("Inder", "inder") 
+```
+
+
+
+```{r}
 departures %>%
-  mutate(month = lubridate::month(leftofc, label = TRUE)) %>% 
+  mutate(leftofc = ymd(leftofc)) %>% 
+  mutate(month = month(leftofc, label = TRUE)) %>% 
   mutate(departure = fct_recode(factor(departure_code),
-                                "CEO death" = "1",
-                                "CEO illness" = "2",
-                                "CEO dismissed for job performance" = "3",
-                                "CEO dismissed for legal violations or concerns" = "4",
-                                "CEO retired" = "5",
-                                "New opportunity (new career driven succession)" = "6",
+                                "Death" = "1",
+                                "Illness" = "2",
+                                "Job performance" = "3",
+                                "Legal violations or concerns" = "4",
+                                "Retired" = "5",
+                                "New opportunity" = "6",
                                 "Other" = "7",
                                 "Missing" = "8")) %>% 
-  filter(fyear_gone < 2500 & !departure %in% c(NA, "9", "Missing")) %>%
-  filter(fyear_gone > 1990) %>% 
-  ggplot(aes(x = departure, y = leftofc, fill = departure, color = departure)) +
-  geom_jitter(alpha = 0.03) +
-  geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.5) +
-  geom_flat_violin(position = position_nudge(x = 0.2, y = 0), alpha = 0.8) +
-  coord_flip() +
-  facet_grid(~ month) +
-  labs(x = "", y = "Departure date") +
-  theme_test() +
-  theme(legend.position = "none")
+  filter(fyear_gone < 2500 & !departure %in% c(NA, "9", "Missing")) -> departures1
 ```
 
 
 ```{r}
-library(ggrepel)
-departures %>% 
-  filter(str_detect(coname, "APPLE INC")) %>% 
-  ggplot(aes(x = leftofc, y = 1, label = exec_fullname, color = exec_fullname)) +
-  geom_point(aes(color = exec_fullname)) +
-  geom_line() +
-  geom_text_repel(point.padding = 1)
+departures1 %>% 
+  ggplot(aes(x = departure, y = leftofc, 
+             fill = departure, 
+             color = departure)) +
+  geom_jitter(alpha = 0.03) +
+  geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.5) +
+  geom_flat_violin(position = position_nudge(x = 0.2, y = 0), 
+                   alpha = 0.8) +
+  coord_flip() +
+  facet_grid(~ month, switch = "x") +
+  labs(x = "", y = "",
+       title = "CEO Departures",
+       subtitle = "Monthly distribution of reasons for CEO departure in S&P 1500 firms from 1980 through 2021",
+       caption = "Source: Gentry et al. | Figure: @maxwelco") +
+  theme_solarized_2() +
+  scale_fill_solarized() +
+  scale_color_solarized() +
+  theme(legend.position = "none",
+        text = element_text(family = "inder"),
+        plot.title = element_markdown(family = "inder", size = 20),
+        plot.subtitle = element_markdown(family = "inder", size = 11),
+        plot.caption = element_markdown(size = 7),
+        panel.background = element_blank(),
+        strip.text = element_markdown(margin = margin(0, 0, 0, 0)),
+        axis.text.x = element_blank(),
+        axis.ticks = element_blank()) +
+  ggsave("fig.png", width = 9, height = 5)
 ```
+
+
+
 
 
