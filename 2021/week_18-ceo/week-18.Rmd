@@ -1,0 +1,59 @@
+---
+title: "week-18"
+author: "Maxwel Coura Oliveira"
+date: "4/27/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(PupillometryR)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 18)
+```
+
+```{r}
+departures <- tuesdata$departures
+```
+
+```{r}
+departures %>%
+  mutate(month = lubridate::month(leftofc, label = TRUE)) %>% 
+  mutate(departure = fct_recode(factor(departure_code),
+                                "CEO death" = "1",
+                                "CEO illness" = "2",
+                                "CEO dismissed for job performance" = "3",
+                                "CEO dismissed for legal violations or concerns" = "4",
+                                "CEO retired" = "5",
+                                "New opportunity (new career driven succession)" = "6",
+                                "Other" = "7",
+                                "Missing" = "8")) %>% 
+  filter(fyear_gone < 2500 & !departure %in% c(NA, "9", "Missing")) %>%
+  filter(fyear_gone > 1990) %>% 
+  ggplot(aes(x = departure, y = leftofc, fill = departure, color = departure)) +
+  geom_jitter(alpha = 0.03) +
+  geom_boxplot(width = 0.2, outlier.shape = NA, alpha = 0.5) +
+  geom_flat_violin(position = position_nudge(x = 0.2, y = 0), alpha = 0.8) +
+  coord_flip() +
+  facet_grid(~ month) +
+  labs(x = "", y = "Departure date") +
+  theme_test() +
+  theme(legend.position = "none")
+```
+
+
+```{r}
+library(ggrepel)
+departures %>% 
+  filter(str_detect(coname, "APPLE INC")) %>% 
+  ggplot(aes(x = leftofc, y = 1, label = exec_fullname, color = exec_fullname)) +
+  geom_point(aes(color = exec_fullname)) +
+  geom_line() +
+  geom_text_repel(point.padding = 1)
+```
+
+

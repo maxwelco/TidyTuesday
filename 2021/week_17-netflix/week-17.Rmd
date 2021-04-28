@@ -40,9 +40,9 @@ netflix1 %>%
 ```{r}
 library(extrafont)
 library(showtext)
+library(ggrepel)
 showtext_auto()
-font_add_google("Bebas Neue", "bebas")
-font_add_google("Roboto Condensed", "roboto")
+font_add_google("Bebas Neue", "bebas") # netflix font
 ```
 
 
@@ -94,19 +94,21 @@ theme_set(theme_style)
 
 ```{r warning = FALSE}
 netflix1 %>% 
-  ggplot(aes(x = date_added, y = release_year)) +
-  geom_hex() +
+  ggplot(aes(x = date_added, y = release_year, label = title)) +
+  geom_hex(bins = 30) +
   scale_fill_gradient2(low = white_netflix,
                      high = red_netflix) +
   coord_flip() +
-  labs(y = "Actual year of release",
+  geom_text_repel(data = filter(netflix1, release_year < 1950 | year_added < 2010), 
+                  size = 1.5, color = black_netflix, family = family_text) +
+  labs(y = "Actual release year",
        x = "Date added to Netflix",
        title = netflix_logo,
        subtitle = "A comparison of date added vs actual release year of Netflix movie / TV show",
        caption = "Source: Kaggle | Figure: @maxwelco") +
   theme(legend.position = "none") +
   facet_grid(~ type) +
-  ggsave("fig.png", width = 7, height = 7, dpi = 600)
+  ggsave("fig.png", width = 7, height = 8, dpi = 600)
 ```
 
 
