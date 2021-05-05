@@ -1,0 +1,134 @@
+---
+title: "week-19"
+author: "Maxwel Coura Oliveira"
+date: "5/4/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(ggrepel)
+library(sf)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(ggspatial)
+```
+
+
+
+```{r}
+water <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-05-04/water.csv')
+```
+
+
+
+
+
+```{r}
+#load world data
+world <- ne_countries(scale = "small", returnclass = "sf")
+class(world)
+```
+
+
+
+```{r}
+peru <- water %>% 
+  filter(country_name == "Peru")
+```
+
+```{r}
+# #here WGS84, which is the CRS code #4326
+(peru_sites <- st_as_sf(peru, coords = c("lon_deg", y = "lat_deg"), 
+    crs = 4326, agr = "constant"))
+```
+
+```{r}
+loc <- tibble(location = c("Lima", "Arequipa", 
+                           "Cusco", "Trujillo", 
+                           "Iquitos", "Pucallpa",
+                           "Yurimaguas"), 
+                              lng = c(-77.042, -71.537, -71.967, 
+                                      -79.033, -73.251, -74.582, 
+                                      -76.112), 
+                              lat = c(-12.046, -16.409, -13.5320, -8.106, 
+                                      -3.743, -8.3929, -5.900))
+
+# #here WGS84, which is the CRS code #4326
+(sites <- st_as_sf(loc, coords = c("lng", "lat"), 
+    crs = 4326, agr = "constant"))
+```
+
+```{r}
+library(extrafont)
+library(ggtext)
+library(showtext)
+showtext_auto()
+font_add_google("Bebas Neue", "bebas") 
+font_add_google("Roboto", "roboto") 
+```
+
+
+
+
+```{r}
+ggplot(data = world) +
+  geom_sf() +
+  geom_point(data = peru, aes(x = lon_deg, y = lat_deg),
+             size = 1, color = "#b2b2ff") +
+  geom_sf(data = sites %>% filter(location != "Lima"), 
+          color = "#D91023", shape = 15, family = "roboto") +
+  geom_sf(data = sites %>% filter(location == "Lima"), 
+          color = "#D91023", shape = 17, size = 4, family = "roboto") +
+  coord_sf(xlim = c(-83, -68), ylim = c(-19, 0), expand = FALSE) +
+  geom_text_repel(data = loc, aes(x = lng, y = lat, label = location), 
+        size = 3.9, col = "black", fontface = "bold", 
+        point.padding = 2,
+        nudge_x = c(-1, 1, 1, 1, -1, 1, 1), 
+        nudge_y = c(0.25, 0.25, 0.25, 0.25, -0.25, 0.25, 0.25)) +
+  labs(x = "", y = "",
+       title = "Water Sources in <b style='color:#D91023;'>Peru</b>",
+       subtitle = "Location of <b style='color:#b2b2ff;'>water sources</b> since 1970",
+       caption = "Source: Water Point Data Exchange | Figure: @maxwelco") +
+  annotation_scale(location = "bl", width_hint = 0.3) + 
+  annotation_north_arrow(location = "bl", which_north = "true", 
+                         pad_x = unit(0.45, "in"), 
+                         pad_y = unit(0.25, "in"), 
+                         style = north_arrow_fancy_orienteering) +
+  annotate(geom = "text", x = -80, y = -14, label = "Pacific Ocean", 
+           fontface = "italic", color = "blue", 
+           family = "roboto", size = 6) +
+  annotate(geom = "text", x = -78, y = -1, label = "Ecuador", 
+           fontface = "bold", color = "grey80", 
+           family = "roboto", size = 7) +
+  annotate(geom = "text", x = -70, y = -7, label = "Brazil", 
+           fontface = "bold", color = "grey80", 
+           family = "roboto", size = 7) +
+  annotate(geom = "text", x = -72, y = -0.5, label = "Colombia", 
+           fontface = "bold", color = "grey80", 
+           family = "roboto", size = 7) +
+  annotate(geom = "text", x = -67.5, y = -15, label = "Bolivia", 
+           fontface = "bold", color = "grey80", 
+           family = "roboto", size = 7) +
+  annotate(geom = "text", x = -74, y = -11, label = "Peru", 
+          fontface = "bold", color = "#D91023", size = 10, 
+          family = "bebas") +
+  theme(legend.position = "bottom",
+        panel.grid.major = element_line(color =gray(0.6), 
+                                        linetype = "dashed", 
+                                        size = 0.5), 
+        panel.background = element_rect(fill = "aliceblue"),
+        plot.title = element_markdown(family = "bebas", size = 22),
+        plot.subtitle = element_markdown(family = "roboto", size = 13),
+        plot.caption = element_markdown(family = "roboto", size = 8)) +
+
+   ggsave("map.png")
+```
+
+
+
+
+
+
+
