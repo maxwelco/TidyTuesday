@@ -31,8 +31,6 @@ world <- ne_countries(scale = "small", returnclass = "sf")
 class(world)
 ```
 
-
-
 ```{r}
 peru <- water %>% 
   filter(country_name == "Peru")
@@ -46,7 +44,7 @@ peru <- water %>%
 
 ```{r}
 loc <- tibble(location = c("Lima", "Arequipa", 
-                           "Cusco", "Trujillo", 
+                           "Cuzco", "Trujillo", 
                            "Iquitos", "Pucallpa",
                            "Yurimaguas"), 
                               lng = c(-77.042, -71.537, -71.967, 
@@ -55,9 +53,16 @@ loc <- tibble(location = c("Lima", "Arequipa",
                               lat = c(-12.046, -16.409, -13.5320, -8.106, 
                                       -3.743, -8.3929, -5.900))
 
+loc2 <- tibble(location = c("Chachapoyas", "Machu Picchu", "Nazca"),
+               lat = c(-6.2302, -13.163, -14.739),
+               lng = c(-77.870, -72.545, -75.130))
+
 # #here WGS84, which is the CRS code #4326
-(sites <- st_as_sf(loc, coords = c("lng", "lat"), 
-    crs = 4326, agr = "constant"))
+sites <- st_as_sf(loc, coords = c("lng", "lat"), 
+    crs = 4326, agr = "constant")
+
+sites2 <- st_as_sf(loc2, coords = c("lng", "lat"), 
+    crs = 4326, agr = "constant")
 ```
 
 ```{r}
@@ -80,20 +85,24 @@ ggplot(data = world) +
   geom_sf(data = sites %>% filter(location != "Lima"), 
           color = "#D91023", shape = 15, family = "roboto") +
   geom_sf(data = sites %>% filter(location == "Lima"), 
-          color = "#D91023", shape = 17, size = 4, family = "roboto") +
-  coord_sf(xlim = c(-83, -68), ylim = c(-19, 0), expand = FALSE) +
+          color = "#D91023", shape = 17, size = 4) +
   geom_text_repel(data = loc, aes(x = lng, y = lat, label = location), 
-        size = 3.9, col = "black", fontface = "bold", 
+        size = 3.9, col = "black", fontface = "bold", family = "roboto",
         point.padding = 2,
-        nudge_x = c(-1, 1, 1, 1, -1, 1, 1), 
-        nudge_y = c(0.25, 0.25, 0.25, 0.25, -0.25, 0.25, 0.25)) +
+        nudge_x = c(-1, 0.5, -1, 1, 1, -1, 1), 
+        nudge_y = c(0.25, -0.25, -0.25, -0.25, -0.25, -0.25, -0.25)) +
+  geom_sf(data = sites2, 
+          color = "grey50", shape = 11, size = 1) +
+  coord_sf(xlim = c(-83, -68), ylim = c(-19, 0), expand = FALSE) +
+  geom_text_repel(data = loc2, aes(x = lng, y = lat, label = location), 
+        size = 2, col = "black", fontface = "italic", family = "roboto") +
   labs(x = "", y = "",
        title = "Water Sources in <b style='color:#D91023;'>Peru</b>",
        subtitle = "Location of <b style='color:#b2b2ff;'>water sources</b> since 1970",
        caption = "Source: Water Point Data Exchange | Figure: @maxwelco") +
   annotation_scale(location = "bl", width_hint = 0.3) + 
   annotation_north_arrow(location = "bl", which_north = "true", 
-                         pad_x = unit(0.45, "in"), 
+                         pad_x = unit(0.43, "in"), 
                          pad_y = unit(0.25, "in"), 
                          style = north_arrow_fancy_orienteering) +
   annotate(geom = "text", x = -80, y = -14, label = "Pacific Ocean", 
@@ -121,7 +130,8 @@ ggplot(data = world) +
         panel.background = element_rect(fill = "aliceblue"),
         plot.title = element_markdown(family = "bebas", size = 22),
         plot.subtitle = element_markdown(family = "roboto", size = 13),
-        plot.caption = element_markdown(family = "roboto", size = 8)) +
+        plot.caption = element_markdown(family = "roboto", size = 8, 
+                                        hjust = 0.5)) +
 
    ggsave("map.png")
 ```
