@@ -20,3 +20,8 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ### week_17- Netflix
 
 ![CEO](/2021/week_17-netflix/fig.png)
+
+
+### week_17- Votes UN
+
+![UN](/2021/week_13-votes/south_america.png)
