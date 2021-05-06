@@ -40,9 +40,6 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2020
 
-### Week 47 - Phones
-
-![phones](/2020/week_47-phones/figure.png)
 
 ### Week 40 - Beyonce
 
@@ -59,9 +56,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ![Investment](/2020/week_38-govspend/investment.png)
 
 
-### Week 36 - Crops
 
-![Crops](/2020/week_36-crops/USA_plot.png)
 
 
 
