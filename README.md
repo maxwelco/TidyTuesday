@@ -40,6 +40,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2020
 
+### Week 47 - Phones
+
+![phones](/2020/week_47-phones/figure.png)
+
 ### Week 40 - Beyonce
 
 ![beyonce](/2020/week_40-beyonce/figure.png)
