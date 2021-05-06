@@ -27,7 +27,16 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ![UN](/2021/week_13-votes/south_america.png)
 
 
-### Week 13 - Votes UN
+### Week 13 - Wealth
 
 ![Retirement](2021/week_7-wealth/retirement.gif)
+
+
+### Week 04 - Kenya
+
+
+![Kenya](/2021/week_4-kenya/kenya_coffee.png)
+
+
+
 
