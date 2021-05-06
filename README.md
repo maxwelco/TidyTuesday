@@ -45,6 +45,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ![Investment](/2020/week_38-govspend/investment.png)
 
 
+### Week 36 - Crops
+
+
+![Crops](/2020/week_36-crops/USA_plot.png)
 
 
 
