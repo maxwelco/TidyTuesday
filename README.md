@@ -17,11 +17,17 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ![CEO](/2021/week_18-ceo/fig.png)
 
 
-### week_17- Netflix
+### Week 17 - Netflix
 
 ![CEO](/2021/week_17-netflix/fig.png)
 
 
-### week_17- Votes UN
+### Week 13 - Votes UN
 
 ![UN](/2021/week_13-votes/south_america.png)
+
+
+### Week 13 - Votes UN
+
+![Retirement](2021/week_7-wealth/retirement.gif)
+
