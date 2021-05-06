@@ -40,6 +40,16 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2020
 
+### Week 40 - Beyonce
+
+![beyonce](/2020/week_40-beyonce/figure.png)
+
+
+### Week 39 - Himalayan Climbing Expedition
+
+![Himalayan](/2020/week_39-hymal/peak.png)
+
+
 ### Week 38 - Investment
 
 ![Investment](/2020/week_38-govspend/investment.png)
@@ -47,12 +57,12 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ### Week 36 - Crops
 
-
 ![Crops](/2020/week_36-crops/USA_plot.png)
 
 
-### Week 36 - Himalayan Climbing Expedition
 
 
-![Himalayan](/2020/week_39-hymal/peak.png)
+
+
+
 
