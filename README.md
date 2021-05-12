@@ -5,6 +5,11 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 19 - Broadband inequality
+
+
+![Water Sources](/2021/week_20-broadband/fig.png)
+
 
 ### Week 19 - Water Sources in Peru
 
