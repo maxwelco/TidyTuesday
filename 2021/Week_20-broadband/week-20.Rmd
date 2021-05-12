@@ -11,8 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-library(zipcodeR)
-library(maps)
+library(ggthemes)
+library(ggtext)
 ```
 
 
@@ -26,55 +26,41 @@ broadband_zip <- tuesdata$broadband_zip
 ```
 
 ```{r}
-library(ggthemes)
+
 ```
 
 
+
+
 ```{r}
-broadband_zip %>% 
+broadband_mean <- broadband_zip %>% 
   janitor::clean_names() %>% 
-# filter(st == "WI") %>% 
-#  group_by(st) %>% 
-#  summarise(broadband_usage = mean(broadband_usage)) %>% 
+  group_by(st) %>% 
+  summarise(broadband_usage = mean(broadband_usage))
+
+zip <- broadband_zip %>% 
+  janitor::clean_names()
+```
+
+
+
+
+```{r}
+broadband_mean %>% 
+  janitor::clean_names() %>% 
   ggplot(aes(x = fct_reorder(st, broadband_usage), 
              y = broadband_usage)) +
-  geom_boxplot(notch=TRUE, outlier.shape = 1, fatten = 4) + 
-#  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
-  geom_point(alpha = 0.005) +
+  geom_point(color = "#ff6347", shape = 16, size = 2) +
+  geom_jitter(data = zip, aes(y = broadband_usage), alpha = 0.01) +
   coord_flip() +
   scale_y_continuous(labels = scales::percent_format(scale = 100)) +
   labs(title = "The US broadband inequality",
-       subtitle = "Some states provide better internet access to their population",
+       subtitle = "<b style='color:#ff6347;'>Averaged</b> % people using high speed internet across **zip codes**",
        caption = "Source: The Verge/Microsoft | Figure: @maxwelco",
        x = "", y = "") +
   theme_fivethirtyeight() +
-#  theme_linedraw() +
-  ggsave("fig2.png", height = 8, width = 6)
+  theme(plot.subtitle = element_markdown()) +
+  ggsave("fig.png", height = 8, width = 6)
 ```
-
-```{r}
-broadband_zip %>% 
-  janitor::clean_names() %>% 
-# filter(st == "WI") %>% 
-  group_by(st) %>% 
-  summarise(broadband_usage = mean(broadband_usage),
-            error_range_mae = mean(error_range_mae)) %>% 
-  ggplot(aes(x = fct_reorder(st, broadband_usage), 
-             y = broadband_usage)) +
-  geom_point(alpha = 1) +
-  geom_linerange(aes(ymin = broadband_usage - error_range_mae, ymax = broadband_usage + error_range_mae)) +
-# geom_smooth(method = "loess") +
-  coord_flip() +
-  scale_y_continuous(labels = scales::percent_format(scale = 100)) +
-  labs(title = "The US broadband inequality",
-       subtitle = "Some states are able to provide better quality internet ",
-       caption = "Source: The Verge/Microsoft | Figure: @maxwelco",
-       x = "", y = "") +
-  theme_economist_white() +
-  ggsave("fig2.png")
-```
-
-
-
 
 
