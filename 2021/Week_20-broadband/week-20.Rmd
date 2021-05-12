@@ -1,0 +1,80 @@
+---
+title: "US-broadband"
+author: "Maxwel Coura Oliveira"
+date: "5/11/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(zipcodeR)
+library(maps)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 20)
+```
+
+```{r}
+broadband <- tuesdata$broadband
+broadband_zip <- tuesdata$broadband_zip
+```
+
+```{r}
+library(ggthemes)
+```
+
+
+```{r}
+broadband_zip %>% 
+  janitor::clean_names() %>% 
+# filter(st == "WI") %>% 
+#  group_by(st) %>% 
+#  summarise(broadband_usage = mean(broadband_usage)) %>% 
+  ggplot(aes(x = fct_reorder(st, broadband_usage), 
+             y = broadband_usage)) +
+  geom_boxplot(notch=TRUE, outlier.shape = 1, fatten = 4) + 
+#  stat_summary(fun.y=mean, geom="point", shape=20, size=2, color="red", fill="red") +
+  geom_point(alpha = 0.005) +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(scale = 100)) +
+  labs(title = "The US broadband inequality",
+       subtitle = "Some states provide better internet access to their population",
+       caption = "Source: The Verge/Microsoft | Figure: @maxwelco",
+       x = "", y = "") +
+  theme_fivethirtyeight() +
+#  theme_linedraw() +
+  ggsave("fig2.png", height = 8, width = 6)
+```
+
+```{r}
+broadband_zip %>% 
+  janitor::clean_names() %>% 
+# filter(st == "WI") %>% 
+  group_by(st) %>% 
+  summarise(broadband_usage = mean(broadband_usage),
+            error_range_mae = mean(error_range_mae)) %>% 
+  ggplot(aes(x = fct_reorder(st, broadband_usage), 
+             y = broadband_usage)) +
+  geom_point(alpha = 1) +
+  geom_linerange(aes(ymin = broadband_usage - error_range_mae, ymax = broadband_usage + error_range_mae)) +
+# geom_smooth(method = "loess") +
+  coord_flip() +
+  scale_y_continuous(labels = scales::percent_format(scale = 100)) +
+  labs(title = "The US broadband inequality",
+       subtitle = "Some states are able to provide better quality internet ",
+       caption = "Source: The Verge/Microsoft | Figure: @maxwelco",
+       x = "", y = "") +
+  theme_economist_white() +
+  ggsave("fig2.png")
+```
+
+
+
+
+
