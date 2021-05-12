@@ -25,10 +25,6 @@ broadband <- tuesdata$broadband
 broadband_zip <- tuesdata$broadband_zip
 ```
 
-```{r}
-
-```
-
 
 
 
