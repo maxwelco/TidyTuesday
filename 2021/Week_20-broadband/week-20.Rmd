@@ -51,7 +51,7 @@ broadband_mean %>%
   coord_flip() +
   scale_y_continuous(labels = scales::percent_format(scale = 100)) +
   labs(title = "The US broadband inequality",
-       subtitle = "<b style='color:#ff6347;'>Averaged</b> % people using high speed internet across **zip codes**",
+       subtitle = "<b style='color:#ff6347;'>Averaged</b> % of people using high speed internet across **zip codes**",
        caption = "Source: The Verge/Microsoft | Figure: @maxwelco",
        x = "", y = "") +
   theme_fivethirtyeight() +
