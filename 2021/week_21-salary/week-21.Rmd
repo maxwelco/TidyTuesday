@@ -1,0 +1,80 @@
+---
+title: "week-21"
+author: "Maxwel Coura Oliveira"
+date: "5/18/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(tilemaps)
+library(sf)
+library(hrbrthemes)
+```
+
+```{r}
+survey <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-05-18/survey.csv')
+```
+
+```{r}
+options(scipen = 999)
+survey %>% 
+    mutate(country = fct_collapse(country,
+         USA = c("United States", "USA", "US"))) %>% 
+  filter(country == "USA") %>% 
+  filter(!is.na(highest_level_of_education_completed)) %>% 
+  mutate(education = 
+           fct_relevel(highest_level_of_education_completed,
+                       levels = c("High School", "Some college", "College degree",
+                       "Professional degree (MD, JD, etc.)", "Master's degree", "PhD"))) %>% 
+  mutate(experience = fct_relevel(overall_years_of_professional_experience,
+                                  levels = c("1 year or less", "2 - 4 years", "5-7 years", 
+                                             "8 - 10 years", "11 - 20 years", "21 - 30 years",
+                                             "31 - 40 years", "41 years or more"))) %>% 
+  mutate_if(is_character, as_factor) %>% 
+  filter(annual_salary <= 200000) %>% 
+  mutate(education = fct_recode(education,
+                                "Professional degree" = "Professional degree (MD, JD, etc.)")) -> survey1
+```
+
+```{r}
+library(showtext)
+font_add_google("Hind", "hind")
+  font_add_google("Viga", "viga")
+font_add_google("Homemade Apple", "apple")
+showtext_auto()
+
+
+theme_set(theme_fivethirtyeight(base_size = 13, base_family = "hind"))
+```
+
+
+```{r}
+survey1 %>% 
+ggplot(aes(x = education, y = experience, fill = annual_salary)) +
+  geom_tile() +
+  labs(y = NULL, x = NULL, title = "Annual salary: education × experience",
+       subtitle = "Having less education is not always a synonym of <b style='color:#472D7BFF;'>lower salaries</b>",
+       caption = "Source: Ask a Manager Salary Survey | Figure: @maxwelco") +
+  scale_fill_viridis_c(option = "C", name = "Annual salary (US$)", 
+                       limits = c(0, 200000), breaks=c(0, 100000, 200000)) +
+  coord_flip() +
+  theme(legend.position = "bottom",
+        plot.title = element_markdown(family = "viga", size = 16),
+        plot.subtitle = element_markdown(),
+        plot.caption = element_markdown(size = 8, color = "grey50"),
+        axis.ticks = element_blank(),
+        legend.margin=margin(t = -0.5, unit='cm'),
+#        axis.text.y = element_markdown(face = "bold"),
+        axis.text.x = element_markdown(angle = 30, margin = margin(5, 0, 0, 0))
+        ) +
+  ggsave("fig.png")
+```
+
+
+
+
+
+
+
+
