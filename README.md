@@ -8,7 +8,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ### Week 21 - Annual salary
 
  
-![salary](/2021/Week_21-salary/fig.png)
+![salary](/2021/week_21-salary/fig.png)
 
 ### Week 20 - Broadband inequality
 
