@@ -5,7 +5,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
-### Week 21 - Annual salary 
+### Week 21 - Annual salary
 
 
 ![salary](/2021/Week_21-salary/fig.png)
