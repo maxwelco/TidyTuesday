@@ -1,0 +1,55 @@
+---
+title: "week-22"
+author: "Maxwel Coura Oliveira"
+date: "5/25/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load('2021-05-25')
+```
+
+
+```{r}
+drivers <- tuesdata$drivers
+records <- tuesdata$records
+```
+
+
+
+```{r}
+records %>% 
+  group_by(track, type, shortcut) %>% 
+  summarise(first = min(time), last = max(time)) -> records1
+```
+
+
+```{r}
+records %>% 
+  count(track, type, shortcut) -> records2
+```
+
+
+
+```{r}
+records1 %>% 
+  left_join(records2) %>% 
+  filter(shortcut == "No" & type == "Single Lap") %>% 
+  mutate(time_diff = last - first) %>% 
+#  group_by(track) %>% 
+#   arrange(desc(time_diff)) %>% 
+  pivot_longer(c("first", "last"), 
+               names_to = "time", values_to = "value") %>% 
+  mutate(track = fct_reorder(track, time_diff)) %>% 
+  ggplot(aes(x = fct_reorder(track, -time_diff), y = time_diff, size = n)) +
+  geom_point() +
+  coord_flip() +
+  labs(y = "seconds", x = NULL) +
+  theme_get()
+```
+
