@@ -7,6 +7,11 @@ output: html_document
 
 ```{r}
 library(tidyverse)
+library(ggtext)
+library(ggthemes)
+library(grid)
+library(ggimage)
+library(magick)
 ```
 
 
@@ -34,6 +39,13 @@ records %>%
   count(track, type, shortcut) -> records2
 ```
 
+```{r}
+library(showtext)
+showtext_auto()
+font_add_google("Press Start 2P", "start")
+font_add_google("Bangers", "bangers")
+font_add_google("Roboto", "roboto")
+```
 
 
 ```{r}
@@ -41,15 +53,89 @@ records1 %>%
   left_join(records2) %>% 
   filter(shortcut == "No" & type == "Single Lap") %>% 
   mutate(time_diff = last - first) %>% 
-#  group_by(track) %>% 
-#   arrange(desc(time_diff)) %>% 
-  pivot_longer(c("first", "last"), 
-               names_to = "time", values_to = "value") %>% 
-  mutate(track = fct_reorder(track, time_diff)) %>% 
-  ggplot(aes(x = fct_reorder(track, -time_diff), y = time_diff, size = n)) +
-  geom_point() +
+  mutate(track = fct_reorder(track, time_diff)) -> records2
+```
+
+
+
+
+```{r}
+library(ggimage)
+library(png)
+koopa <- readPNG("koopa.png")
+yoshi <- readPNG("yoshi.png")
+
+theme_set(theme_pander(base_family = "roboto"))
+```
+
+
+
+
+```{r}
+records2 %>% 
+ggplot(aes(x = fct_reorder(track, -time_diff), y = time_diff, size = n)) +
+  geom_point(color = "#E52521") +
   coord_flip() +
-  labs(y = "seconds", x = NULL) +
-  theme_get()
+  labs(y = NULL, x = NULL, size = "# of records",
+       title = "Mario Kart 64 World Records",
+       subtitle = "Ranking of the difference between the first and current world record.<br>
+       Dot size represents the number of beaten world records.<br>
+       Data is presented for a **single lap** and **without shortcut**.") +
+  scale_y_continuous(breaks = c(0, 2, 4, 6, 8), 
+                     labels = scales::number_format(suffix = " s", 
+                                                    accuracy = 1)) +
+#  annotate("text", x = 4, y = 3, label = "Nobody reduced more \nthan 8.24 seconds in a single track", size =3) +
+  theme(legend.position = "none",
+        plot.title = element_markdown(family = "start", size = 17, 
+                                      hjust = 1.3),
+        plot.subtitle = element_markdown(family = "roboto",
+                                         hjust = 0, size = 12),
+        axis.text.y = element_markdown()) -> figA
+figA
+```
+
+
+```{r}
+figA +
+  annotate(
+    "text", x = 15.4, y = 3.9, size = 3, 
+    color = "#049CD8",
+    label = "The world record has improved\n only in 2.01 s in this track"
+  ) +
+    annotate(
+    "text", x = 10.4, y = 5.8, size = 3, 
+    color = "#43B047",
+    label = "The world record was beaten only \n28x in this track"
+  ) +
+    annotate(
+    "text", x = 5.5, y = 7, size = 3, 
+    color = "#43B047",
+    label = "The word record was beaten \n65x in this track"
+  ) +
+    annotate(
+    "text", x = 1.4, y = 6.1, size = 3, 
+     color = "#049CD8",
+    label = "The world record has improved\n 8.24 s in this track"
+  ) -> figB
+ 
+```
+
+
+
+```{r}
+figB +
+  geom_curve(x = 16, y = 2.2, xend = 15.7, yend = 2.7,
+               arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = -0.3) + 
+  geom_curve(x = 10.1, y = 4, xend = 10.6, yend = 4.6,
+               arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = -0.3) + 
+  geom_segment(x = 4.35, y = 6.95, xend = 4.9, yend = 6.95,
+               arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = -0.3) + 
+  geom_curve(x = 1.15, y = 8.1, xend = 1.6, yend = 7.3,
+               arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = 0.3)  +
+  ggsave("fig.png")
 ```
 
