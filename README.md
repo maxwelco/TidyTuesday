@@ -8,7 +8,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ### Week 22 - Mario kart
 
  
-![skart](/2021/week_22-mariokart/)
+![kart](/2021/week_22-mariokart/fig.png)
 
 ### Week 21 - Annual salary
 
