@@ -37,14 +37,14 @@ font_add_google("Orbitron", "orbitron")
 ```{r}
 summary1 %>% 
   ggplot(aes(x = fct_reorder(season_name, filming_ended), y = value)) +
-  geom_line(size = 2, color = "gray") + 
+  geom_line(size = 2, color = "#ececec") + 
   geom_point(aes(color = viewers), size = 2) +
   coord_flip() +
 #  scale_color_fivethirtyeight() +
   scale_color_manual(values = c("#0000ff", "#ff6347")) +
   labs(title = "Survivor TV Show Viewers",
        subtitle = "Million viewers at **season** <b style='color:#ff6347;'>premier</b> vs <b style='color:#0000ff;'>finale</b> from 2000 (bottom) to 2019 (top)",
-       caption = "Source: SurvivoR | Visualization: @maxwelco",
+       caption = "Source: SurvivoR package | Visualization: @maxwelco",
        y = NULL,
        x = NULL) +
   theme_fivethirtyeight() +
