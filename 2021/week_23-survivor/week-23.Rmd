@@ -1,0 +1,66 @@
+---
+title: "week-23"
+author: "Maxwel Coura Oliveira"
+date: "5/29/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(ggtext)
+```
+
+
+```{r}
+summary <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-01/summary.csv')
+```
+
+
+```{r}
+summary %>% 
+  mutate(season_name = str_remove(season_name, "Survivor: ")) %>% 
+  mutate(diff = abs(viewers_finale - viewers_premier)) %>% 
+  pivot_longer(c("viewers_premier", "viewers_finale"), 
+               names_to = "viewers", 
+               values_to = "value") %>%
+#  dplyr::select(season_name, diff, viewers, value) %>% 
+  mutate(year = lubridate::year(filming_started)) -> summary1
+```
+```{r}
+library(showtext)
+showtext_auto()
+font_add_google("Orbitron", "orbitron")
+```
+
+
+```{r}
+summary1 %>% 
+  ggplot(aes(x = fct_reorder(season_name, filming_ended), y = value)) +
+  geom_line(size = 2, color = "gray") + 
+  geom_point(aes(color = viewers), size = 2) +
+  coord_flip() +
+#  scale_color_fivethirtyeight() +
+  scale_color_manual(values = c("#0000ff", "#ff6347")) +
+  labs(title = "Survivor TV Show Viewers",
+       subtitle = "Million viewers at **season** <b style='color:#ff6347;'>premier</b> vs <b style='color:#0000ff;'>finale</b> from 2000 (bottom) to 2019 (top)",
+       caption = "Source: SurvivoR | Visualization: @maxwelco",
+       y = NULL,
+       x = NULL) +
+  theme_fivethirtyeight() +
+  theme(legend.position = "none",
+        axis.text = element_text(),
+        plot.background = element_rect(fill = "white"),
+        panel.background = element_rect(fill = "white"),
+        axis.text.y = element_markdown(face="bold"),
+        plot.title = element_markdown(hjust = 3, size = 18, family = "orbitron"),
+        plot.subtitle = element_markdown(hjust = 0.97)) +
+  ggsave("fig.png", width = 6, height = 9)
+```
+
+
+
+
+
+
+

@@ -92,9 +92,9 @@ figA +
     label = "The world record has improved\n only 2.01 seconds in this track"
   ) +
     annotate(
-    "text", x = 10.4, y = 5.8, size = 3, 
+    "text", x = 8.6, y = 2.8, size = 3, 
     color = "#43B047",
-    label = "The world record was beaten only \n28× in this track"
+    label = "The world record was \nbeaten only 28× in this track"
   ) +
     annotate(
     "text", x = 5.5, y = 7, size = 3, 
@@ -106,7 +106,6 @@ figA +
      color = "#049CD8",
     label = "The world record has improved\n 8.24 seconds in this track"
   ) -> figB
- 
 ```
 
 
@@ -116,16 +115,15 @@ figB +
   geom_curve(x = 16, y = 2.2, xend = 15.7, yend = 2.7,
                arrow = arrow(length = unit(0.07, "inch")), 
                size = 0.4, curvature = -0.3) + 
-  geom_curve(x = 10.1, y = 4, xend = 10.6, yend = 4.6,
+  geom_curve(x = 10.1, y = 3.8, xend = 9.2, yend = 2.8,
                arrow = arrow(length = unit(0.07, "inch")), 
-               size = 0.4, curvature = -0.3) + 
+               size = 0.4, curvature = 0.3) + 
   geom_segment(x = 4.35, y = 6.95, xend = 4.9, yend = 6.95,
                arrow = arrow(length = unit(0.07, "inch")), 
                size = 0.4, curvature = -0.3) + 
   geom_curve(x = 1.15, y = 8.1, xend = 1.6, yend = 7.3,
                arrow = arrow(length = unit(0.07, "inch")), 
-               size = 0.4, curvature = 0.3)  -> 
-
+               size = 0.4, curvature = 0.3)  -> figC
 ```
 
   
@@ -135,29 +133,41 @@ library(ggimage)
 library(png)
 koopa <- readPNG("koopa.png")
 yoshi <- readPNG("yoshi.png")
+wario <- readPNG("wario.png")
+banshee <- readPNG("banshee.png")
 
 theme_set(theme_pander(base_family = "roboto"))
 ```
 
-
-```{r}
-figC +
-  annotation_custom(rasterGrob(koopa, 
-                              width = unit(1,"npc"), 
-                               height = unit(1,"npc")), 
-                  xmin = 12, xmax = 16, 
-                  ymin = 5, ymax = 7) +
   geom_curve(x = 14.7, y = 4, xend = 13.5, yend = 4.8,
                arrow = arrow(length = unit(0.07, "inch")), 
                size = 0.4, curvature = 0.3) +
   geom_curve(x = 2, y = 6, xend = 3.2, yend = 5.2,
                arrow = arrow(length = unit(0.07, "inch")), 
                size = 0.4, curvature = 0.3) +
+
+```{r}
+figC +
+  annotation_custom(rasterGrob(koopa, 
+                              width = unit(1,"npc"), 
+                               height = unit(1,"npc")), 
+                  xmin = 14, xmax = 16, 
+                  ymin = 5, ymax = 6) +
+  annotation_custom(rasterGrob(wario, 
+                              width = unit(1,"npc"), 
+                               height = unit(1,"npc")), 
+                  xmin = 6.2, xmax = 8.2, 
+                  ymin = 6.5, ymax = 7.5) +
+  annotation_custom(rasterGrob(banshee, 
+                              width = unit(1,"npc"), 
+                               height = unit(1,"npc")), 
+                  xmin = 6, xmax = 8, 
+                  ymin = 2.3, ymax = 3.3) +
   annotation_custom(rasterGrob(yoshi, 
                               width = unit(1,"npc"), 
                                height = unit(1,"npc")), 
-                  xmin = 1, xmax = 5, 
-                  ymin = 3, ymax = 5) +
+                  xmin = 1, xmax = 3, 
+                  ymin = 4, ymax = 5) +
   
   ggsave("fig.png")
 ```
