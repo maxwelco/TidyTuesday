@@ -24,7 +24,6 @@ summary %>%
   pivot_longer(c("viewers_premier", "viewers_finale"), 
                names_to = "viewers", 
                values_to = "value") %>%
-#  dplyr::select(season_name, diff, viewers, value) %>% 
   mutate(year = lubridate::year(filming_started)) -> summary1
 ```
 ```{r}
@@ -40,7 +39,6 @@ summary1 %>%
   geom_line(size = 2, color = "#ececec") + 
   geom_point(aes(color = viewers), size = 2) +
   coord_flip() +
-#  scale_color_fivethirtyeight() +
   scale_color_manual(values = c("#0000ff", "#ff6347")) +
   labs(title = "Survivor TV Show Viewers",
        subtitle = "Million viewers at **season** <b style='color:#ff6347;'>premier</b> and <b style='color:#0000ff;'>finale</b> from 2000 (bottom) to 2019 (top)",
@@ -54,7 +52,8 @@ summary1 %>%
         panel.background = element_rect(fill = "white"),
         axis.text.y = element_markdown(face="bold"),
         plot.title = element_markdown(hjust = 3, size = 18, family = "orbitron"),
-        plot.subtitle = element_markdown(hjust = 0.97)) +
+        plot.subtitle = element_markdown(hjust = 0.95),
+        plot.caption = element_markdown(color = "gray50")) +
   ggsave("fig.png", width = 6, height = 9)
 ```
 
