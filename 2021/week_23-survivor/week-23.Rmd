@@ -43,7 +43,7 @@ summary1 %>%
 #  scale_color_fivethirtyeight() +
   scale_color_manual(values = c("#0000ff", "#ff6347")) +
   labs(title = "Survivor TV Show Viewers",
-       subtitle = "Million viewers at **season** <b style='color:#ff6347;'>premier</b> vs <b style='color:#0000ff;'>finale</b> from 2000 (bottom) to 2019 (top)",
+       subtitle = "Million viewers at **season** <b style='color:#ff6347;'>premier</b> and <b style='color:#0000ff;'>finale</b> from 2000 (bottom) to 2019 (top)",
        caption = "Source: SurvivoR package | Visualization: @maxwelco",
        y = NULL,
        x = NULL) +
