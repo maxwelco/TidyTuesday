@@ -23,9 +23,11 @@ summary %>%
   mutate(diff = abs(viewers_finale - viewers_premier)) %>% 
   pivot_longer(c("viewers_premier", "viewers_finale"), 
                names_to = "viewers", 
-               values_to = "value") %>%
-  mutate(year = lubridate::year(filming_started)) -> summary1
+               values_to = "value") -> summary1
 ```
+
+
+
 ```{r}
 library(showtext)
 showtext_auto()
