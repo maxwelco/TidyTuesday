@@ -1,0 +1,61 @@
+---
+title: "week_24-lakes"
+author: "Maxwel Coura Oliveira"
+date: "6/8/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(ggtext)
+```
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 24)
+```
+
+
+
+```{r}
+stocked <- tuesdata$stocked
+fishing <- tuesdata$fishing
+```
+
+
+
+
+```{r}
+options(scipen = 999)
+fishing %>% 
+  filter(!is.na(grand_total),
+         species != "Cisco and chubs") %>% 
+  filter(region == "Wisconsin (WI)")  %>% 
+  ggplot(aes(x = year, y = species, fill = grand_total)) +
+  geom_tile() +
+  labs(title = "Fish abundance changes at Lake Superior, WI",
+       subtitle = "Cisco, Lake Trout, Lake Whitefish, and Rainbow Smelt are the<br> major commercial fish species throughout 136 years",
+       y = NULL, x = NULL,
+       caption = "Source: Great Lakes Fishery Commission | Visualization: @maxwelco") +
+  scale_x_continuous(expand = c(0,0)) +
+  scale_fill_viridis_c(name = NULL, na.value = "white", 
+                       option = "F",
+                       breaks=c(0, 9500, 19000)) +
+  theme_wsj() +
+  theme(legend.position = "bottom",
+        plot.title = element_markdown(size = 18, hjust = 1),
+        plot.caption.position = "plot",
+        plot.subtitle = element_markdown(size = 12, hjust = 1),
+        plot.caption = element_markdown(size = 7)) +
+  ggsave("Fig.png", width = 7, height = 7)
+```
+
+```{r}
+stocked %>% 
+  ggplot(aes(STATE_PROV, id = SID, 
+             split = SITE, value = WEIGHT)) +
+  geom_parallel_sets(aes(fill = SPECIES), alpha = 0.3, axis.width = 0.1) +
+  geom_parallel_sets_axes(axis.width = 0.1) +
+  geom_parallel_sets_labels(colour = 'white')
+```
+
