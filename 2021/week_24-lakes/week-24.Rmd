@@ -30,7 +30,7 @@ options(scipen = 999)
 fishing %>% 
   filter(!is.na(grand_total),
          species != "Cisco and chubs") %>% 
-  filter(region == "Wisconsin (WI)")  %>% 
+  filter(region == "Wisconsin (WI)")  %>%
   ggplot(aes(x = year, y = species, fill = grand_total)) +
   geom_tile() +
   labs(title = "Fish abundance changes at Lake Superior, WI",
