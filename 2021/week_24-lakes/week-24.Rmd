@@ -47,15 +47,8 @@ fishing %>%
         plot.caption.position = "plot",
         plot.subtitle = element_markdown(size = 12, hjust = 1),
         plot.caption = element_markdown(size = 7)) +
-  ggsave("Fig.png", width = 7, height = 7)
+  ggsave("fig.png", width = 7, height = 7)
 ```
 
-```{r}
-stocked %>% 
-  ggplot(aes(STATE_PROV, id = SID, 
-             split = SITE, value = WEIGHT)) +
-  geom_parallel_sets(aes(fill = SPECIES), alpha = 0.3, axis.width = 0.1) +
-  geom_parallel_sets_axes(axis.width = 0.1) +
-  geom_parallel_sets_labels(colour = 'white')
-```
+
 
