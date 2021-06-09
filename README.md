@@ -5,6 +5,13 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+
+### Week 24 - Fishing
+
+ 
+![fishing](/2021/week_24-lakes/fig.png)
+
+
 ### Week 23 - Survivor
 
  
