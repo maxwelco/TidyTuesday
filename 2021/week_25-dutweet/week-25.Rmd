@@ -1,0 +1,136 @@
+---
+title: "week-25"
+author: "Maxwel Coura Oliveira"
+date: "6/17/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(tidytext)
+library(ggtext)
+library(ggthemes)
+```
+
+
+```{r}
+tweets <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-15/tweets.csv')
+```
+```{r}
+tweets %>% 
+  filter(!is.na(username)) %>% 
+  rename("retweet count" = "retweet_count",
+         "like count" = "like_count",
+         "quote count" = "quote_count") %>% 
+  pivot_longer(c("retweet count", "like count", "quote count"), 
+               names_to = "type",
+               values_to = "value") -> tweets1
+```
+filter(like_count == 636)
+
+```{r}
+tweets %>% 
+  filter(!is.na(quote_count)) %>% 
+  summarise(max(quote_count))
+```
+
+```{r}
+tweets %>% 
+  mutate(datetime = make_datetime(datetime))
+```
+
+
+
+
+
+```{r}
+tweets1 %>% 
+  ggplot(aes(x = datetime, y = value)) + 
+  geom_line(aes(color = type)) +
+  scale_colour_viridis_d(name = NULL, option = "D") +
+  labs(title = 'Engagement of **#duBoisChallenge** Tweets in 2021',
+       subtitle = "Charlie Eaton tweet on Feb 19, 2021 has the highest engagement of #duBoisChallenge",
+       caption = "Source: #duBoisChallenge tweets | Visualization: @maxwelco") +
+  annotate("text", x = x, y = 580, 
+           label = "") +
+  theme_excel_new() +
+  facet_grid(~ type, scales = "free") +
+  scale_x_datetime() +
+  theme(plot.title = element_markdown(),
+        plot.subtitle = element_markdown(),
+        plot.caption = element_markdown(color = "grey50")) -> fig1
+fig1
+```
+
+
+```{r}
+x1 <- lubridate::as_datetime("2021-02-19 22:18:37")
+x2 <- lubridate::as_datetime("2021-03-01 22:18:37")
+rect1 <- tibble(type = "like count",
+               x = x1, y = 638, xend = x2, yend = 640)
+rect2 <- tibble(type = "quote count",
+               x = x1, y = 45, xend = x2, yend = 50)
+rect3 <- tibble(type = "retweet count",
+               x = x1, y = 155, xend = x2, yend = 160)
+```
+
+
+```{r}
+fig1 +
+  geom_curve(data = rect1, aes(x = x, y = y, 
+                               xend = xend, yend = yend),
+             arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = -0.3) +
+  geom_curve(data = rect2, aes(x = x, y = y, 
+                               xend = xend, yend = yend),
+             arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = -0.3) + 
+  geom_curve(data = rect3, aes(x = x, y = y, 
+                               xend = xend, yend = yend),
+             arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = -0.3) -> fig2
+```
+
+
+```{r}
+x3 <- lubridate::as_datetime("2021-03-15 22:18:37")
+text1 <- tibble(type = "like count", 
+               x = x3, y = 638)
+
+text2 <- tibble(type = "quote count",
+               x = x3, y = 45)
+
+x4 <- lubridate::as_datetime("2021-03-18 22:18:37")
+text3 <- tibble(type = "retweet count",
+               x = x4, y = 155)
+```
+
+
+```{r}
+fig2 +
+  geom_text(data = text1, aes(x = x, y = y), label = "636 likes", size = 3) +
+  geom_text(data = text2, aes(x = x, y = y), label = "41 quotes", size = 3) +
+  geom_text(data = text3, aes(x = x, y = y), label = "152 retweets", size = 3) +
+  ggsave("fig.png")
+```
+
+
+```{r}
+# code to add the tweet but I did not do it
+library(grid)
+library(png)
+library(lubridate)
+img <- readPNG("img.png")
+
+xmin <- lubridate::as_datetime("2021-04-30 18:48:18")
+xmax <- lubridate::as_datetime("2021-03-01 22:14:37")
+
+ annotation_custom(rasterGrob(img, 
+                              width = unit(1,"npc"), 
+                               height = unit(1,"npc")), 
+                  xmin = xmin, xmax = xmax, 
+                  ymin = 300, ymax = 500) 
+```
+
+
