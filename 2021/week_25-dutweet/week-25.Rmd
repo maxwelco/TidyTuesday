@@ -27,19 +27,6 @@ tweets %>%
                names_to = "type",
                values_to = "value") -> tweets1
 ```
-filter(like_count == 636)
-
-```{r}
-tweets %>% 
-  filter(!is.na(quote_count)) %>% 
-  summarise(max(quote_count))
-```
-
-```{r}
-tweets %>% 
-  mutate(datetime = make_datetime(datetime))
-```
-
 
 
 
@@ -116,7 +103,7 @@ fig2 +
 ```
 
 
-```{r}
+```{r eval = FALSE}
 # code to add the tweet but I did not do it
 library(grid)
 library(png)
@@ -126,11 +113,11 @@ img <- readPNG("img.png")
 xmin <- lubridate::as_datetime("2021-04-30 18:48:18")
 xmax <- lubridate::as_datetime("2021-03-01 22:14:37")
 
- annotation_custom(rasterGrob(img, 
-                              width = unit(1,"npc"), 
-                               height = unit(1,"npc")), 
-                  xmin = xmin, xmax = xmax, 
-                  ymin = 300, ymax = 500) 
+# annotation_custom(rasterGrob(img, 
+#                              width = unit(1,"npc"), 
+#                               height = unit(1,"npc")), 
+#                  xmin = xmin, xmax = xmax, 
+#                  ymin = 300, ymax = 500) 
 ```
 
 
