@@ -6,6 +6,11 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ## 2021
 
 
+### Week 25 - duBois tweets
+
+ 
+![tweets](2021/week_25-dutweet/fig.png)
+
 ### Week 24 - Fishing
 
  
