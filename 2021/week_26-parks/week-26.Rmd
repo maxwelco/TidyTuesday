@@ -1,0 +1,101 @@
+---
+title: "week-26"
+author: "Maxwel Coura Oliveira"
+date: "6/22/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggtext)
+```
+
+
+```{r}
+parks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-22/parks.csv')
+```
+
+```{r}
+parks %>% 
+  filter(!is.na(dogpark_data)) %>% 
+  group_by(year) %>% 
+  arrange(desc(dogpark_data)) %>% 
+  mutate(rank = row_number()) %>% 
+  filter(rank <= 100) -> parks1
+```
+, "Omaha"
+```{r}
+parks1 %>% 
+  mutate(highlight = ifelse(city %in% c("Des Moines", "St. Paul",
+                                        "Cincinnati", "Wichita",
+                                        "Chicago", "Kansas City",
+                                        "Cleveland", "Toledo",
+                                        "Lincoln", "Madison",
+                                        "Milwaukee"), TRUE, FALSE),
+         variable_col = if_else(highlight == TRUE, city, "NA")) -> parks2
+```
+
+```{r}
+#Set theme
+library(extrafont)
+#font_family <- 'Arial' 
+background <- "#1D1D1D"
+text_colour <- "white"
+axis_colour <- "white"
+plot_colour <- "black"
+theme_style <- theme(#text = element_text(family = font_family),
+                  rect = element_rect(fill = background),
+                  plot.background = element_rect(fill = background, color = NA),
+                  plot.title = element_markdown(family = "Arial Rounded MT Bold",
+                                            face = 'bold', size = 50, colour = text_colour),
+                  plot.subtitle = element_text(size = 15, colour = text_colour),
+                  plot.caption = element_text(size = 20, colour = text_colour),
+                  panel.background = element_rect(fill = background, color = NA),
+                  panel.border = element_blank(),
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.major.x = element_blank(),
+                  panel.grid.minor.x = element_blank(),
+                  axis.title.y = element_text(face = 'bold', size = 13, 
+                                              colour = text_colour),
+                  axis.title.x = element_blank(),
+                  axis.text.x.bottom = element_text(size = 12, colour= axis_colour),
+                  axis.text.x.top = element_text(size = 12, colour= axis_colour),
+                  axis.text.y = element_text(size = 12, colour = text_colour),
+                  axis.ticks = element_blank(),
+                  axis.line = element_blank(),
+                  legend.text = element_text(size = 12, colour= text_colour),
+                  legend.title = element_text(size = 12, colour= text_colour),
+                  legend.position="none") 
+theme_set(theme_classic() + theme_style)
+```
+
+
+```{r}
+parks2 %>% 
+  ggplot(aes(x = year, y = rank, group = city, label = city)) +
+  scale_y_reverse(breaks = 50:1) +
+  coord_cartesian(ylim = c(51,1)) +
+  geom_line(data = parks2 %>% filter(variable_col == "NA"),
+                                      color = "#39393A", size = 1) +
+  geom_point(data = parks2 %>% filter(variable_col == "NA"),
+                                      color = "#39393A", size = 2) +
+  geom_line(data = parks2 %>% filter(variable_col != "NA"),
+                                       aes(color = variable_col), size = 1) +
+  geom_point(data = parks2 %>% filter(variable_col != "NA"),
+                                       aes(color = variable_col), size = 2) +
+  scale_x_continuous(breaks = seq(2015, 2020, 1), limits= c(2015, 2020), 
+                     expand = c(.05, .05)) +
+  geom_text(data = parks2 %>% filter(year == "2015"),
+            mapping = aes(label = city, x = 2014.95, color = variable_col),
+            hjust = "right",
+            fontface = "bold",
+            size = 2) +
+  geom_text(data = parks2 %>% filter(year == "2020"),
+            mapping = aes(label = city, x = 2020.2, color = variable_col),
+            hjust = "left",
+            fontface = "bold",
+            size = 2) +
+  coord_cartesian(ylim = c(51,1)) +
+  theme(legend.position = "none")
+```
+

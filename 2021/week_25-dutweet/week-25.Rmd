@@ -17,6 +17,8 @@ library(ggthemes)
 ```{r}
 tweets <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-15/tweets.csv')
 ```
+
+
 ```{r}
 tweets %>% 
   filter(!is.na(username)) %>% 
@@ -39,14 +41,13 @@ tweets1 %>%
   labs(title = 'Engagement of **#duBoisChallenge** Tweets in 2021',
        subtitle = "Charlie Eaton tweet on Feb 19, 2021 has the highest engagement of #duBoisChallenge",
        caption = "Source: #duBoisChallenge tweets | Visualization: @maxwelco") +
-  annotate("text", x = x, y = 580, 
-           label = "") +
   theme_excel_new() +
   facet_grid(~ type, scales = "free") +
   scale_x_datetime() +
   theme(plot.title = element_markdown(),
         plot.subtitle = element_markdown(),
-        plot.caption = element_markdown(color = "grey50")) -> fig1
+        plot.caption = element_markdown(color = "grey50"),
+        legend.position = "none") -> fig1
 fig1
 ```
 
