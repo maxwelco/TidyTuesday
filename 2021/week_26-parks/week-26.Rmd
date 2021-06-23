@@ -23,17 +23,22 @@ parks %>%
   mutate(rank = row_number()) %>% 
   filter(rank <= 100) -> parks1
 ```
-, "Omaha"
+
+
+
 ```{r}
 parks1 %>% 
   mutate(highlight = ifelse(city %in% c("Des Moines", "St. Paul",
+                                        "Minneapolis", "Columbus",
                                         "Cincinnati", "Wichita",
                                         "Chicago", "Kansas City",
                                         "Cleveland", "Toledo",
                                         "Lincoln", "Madison",
-                                        "Milwaukee"), TRUE, FALSE),
+                                        "Milwaukee", "Omaha",
+                                        "Indianapolis"), TRUE, FALSE),
          variable_col = if_else(highlight == TRUE, city, "NA")) -> parks2
 ```
+
 
 ```{r}
 #Set theme
@@ -47,26 +52,78 @@ theme_style <- theme(#text = element_text(family = font_family),
                   rect = element_rect(fill = background),
                   plot.background = element_rect(fill = background, color = NA),
                   plot.title = element_markdown(family = "Arial Rounded MT Bold",
-                                            face = 'bold', size = 50, colour = text_colour),
-                  plot.subtitle = element_text(size = 15, colour = text_colour),
-                  plot.caption = element_text(size = 20, colour = text_colour),
+                                            face = 'bold', size = 20, colour = text_colour),
+                  plot.subtitle = element_markdown(size = 13, colour = text_colour),
+                  plot.caption = element_text(size = 7, colour = text_colour),
                   panel.background = element_rect(fill = background, color = NA),
                   panel.border = element_blank(),
+                  plot.caption.position = "plot",
                   panel.grid.major.y = element_blank(),
                   panel.grid.major.x = element_blank(),
                   panel.grid.minor.x = element_blank(),
                   axis.title.y = element_text(face = 'bold', size = 13, 
                                               colour = text_colour),
                   axis.title.x = element_blank(),
-                  axis.text.x.bottom = element_text(size = 12, colour= axis_colour),
-                  axis.text.x.top = element_text(size = 12, colour= axis_colour),
-                  axis.text.y = element_text(size = 12, colour = text_colour),
+                  axis.text.x = element_text(size = 12, colour= axis_colour),
+                  axis.text.y = element_text(size = 8, colour = text_colour),
                   axis.ticks = element_blank(),
                   axis.line = element_blank(),
                   legend.text = element_text(size = 12, colour= text_colour),
                   legend.title = element_text(size = 12, colour= text_colour),
                   legend.position="none") 
 theme_set(theme_classic() + theme_style)
+```
+
+```{r}
+parks2 %>% 
+  ggplot(aes(x = year, y = rank, group = city, label = city)) +
+  geom_text(data = parks2 %>% filter(year == "2015"),
+            mapping = aes(label = city, x = 2014.9, color = variable_col),
+            hjust = "right",
+            fontface = "bold",
+            size = 3) +
+  geom_text(data = parks2 %>% filter(year == "2020"),
+            mapping = aes(label = city, x = 2020.1, color = variable_col),
+            hjust = "left",
+            fontface = "bold",
+            size = 3) +
+  geom_line(data = parks2 %>% filter(variable_col == "NA"),
+            color = "#39393A", 
+            size = 1) +
+  geom_point(data = parks2 %>% filter(variable_col == "NA"),
+             color = "#39393A", 
+             size = 2) +
+  geom_line(data = parks2 %>% filter(variable_col != "NA"),
+            aes(color = variable_col), 
+            size = 1) +
+  geom_point(data = parks2 %>% filter(variable_col != "NA"),
+             aes(color = variable_col), 
+             size = 2) +
+  scale_y_reverse(breaks = 100:1) +
+  coord_cartesian(ylim = c(101,1)) +
+  scale_x_continuous(breaks = seq(2015, 2020, 1), 
+                     limits= c(2014.2, 2020.8)) +
+     scale_color_manual(values = c("#F2D9F3",   
+                                   "#F2D9F3", 
+                                   "#00E5E5", 
+                                   "#DEB887", 
+                                   "#FFFFCC", 
+                                   "#FA9664", 
+                                   "#FF4040",   
+                                   "#48DE7A",  
+                                   "#942DC7", 
+                                   "#F5F5DC", 
+                                   "#FAFA00",
+                                   "#39393A", # NA
+                                   "#FF00FF", 
+                                   "#9966FF",
+                                   "#00FF00",
+                                   "#0099FF")) +
+  labs(title = "Top 100 dog friendly cities in the US",
+       subtitle = "US Midwest cities are highlighted. <b style='color:#942DC7;'>Madison, WI</b> is the top friendly city in the Midwest",
+       caption = "Source =  | Vizualization: @maxwelco") 
+
+ggsave("fig.png", height = 12, width = 8)
 ```
 
 
@@ -86,7 +143,7 @@ parks2 %>%
   scale_x_continuous(breaks = seq(2015, 2020, 1), limits= c(2015, 2020), 
                      expand = c(.05, .05)) +
   geom_text(data = parks2 %>% filter(year == "2015"),
-            mapping = aes(label = city, x = 2014.95, color = variable_col),
+            mapping = aes(label = city, x = 2014.99, color = variable_col),
             hjust = "right",
             fontface = "bold",
             size = 2) +
@@ -96,6 +153,8 @@ parks2 %>%
             fontface = "bold",
             size = 2) +
   coord_cartesian(ylim = c(51,1)) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") 
+
+ggsave("fig.png", height = 14, width = 8)
 ```
 
