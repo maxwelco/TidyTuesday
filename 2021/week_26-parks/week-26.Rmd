@@ -36,7 +36,7 @@ parks1 %>%
                                         "Lincoln", "Madison",
                                         "Milwaukee", "Omaha",
                                         "Indianapolis"), TRUE, FALSE),
-         variable_col = if_else(highlight == TRUE, city, "NA")) -> parks2
+         variable = if_else(highlight == TRUE, city, "NA")) -> parks2
 ```
 
 
@@ -54,7 +54,7 @@ theme_style <- theme(#text = element_text(family = font_family),
                   plot.title = element_markdown(family = "Arial Rounded MT Bold",
                                             face = 'bold', size = 20, colour = text_colour),
                   plot.subtitle = element_markdown(size = 13, colour = text_colour),
-                  plot.caption = element_text(size = 7, colour = text_colour),
+                  plot.caption = element_text(size = 7, colour = "#39393A"),
                   panel.background = element_rect(fill = background, color = NA),
                   panel.border = element_blank(),
                   plot.caption.position = "plot",
@@ -78,29 +78,32 @@ theme_set(theme_classic() + theme_style)
 parks2 %>% 
   ggplot(aes(x = year, y = rank, group = city, label = city)) +
   geom_text(data = parks2 %>% filter(year == "2015"),
-            mapping = aes(label = city, x = 2014.9, color = variable_col),
+            mapping = aes(label = city, x = 2014.9, color = variable),
             hjust = "right",
             fontface = "bold",
             size = 3) +
   geom_text(data = parks2 %>% filter(year == "2020"),
-            mapping = aes(label = city, x = 2020.1, color = variable_col),
+            mapping = aes(label = city, x = 2020.1, color = variable),
             hjust = "left",
             fontface = "bold",
             size = 3) +
-  geom_line(data = parks2 %>% filter(variable_col == "NA"),
+  geom_line(data = parks2 %>% filter(variable == "NA"),
             color = "#39393A", 
             size = 1) +
-  geom_point(data = parks2 %>% filter(variable_col == "NA"),
+  geom_point(data = parks2 %>% filter(variable == "NA"),
              color = "#39393A", 
              size = 2) +
-  geom_line(data = parks2 %>% filter(variable_col != "NA"),
-            aes(color = variable_col), 
+  geom_line(data = parks2 %>% filter(variable != "NA"),
+            aes(color = variable), 
             size = 1) +
-  geom_point(data = parks2 %>% filter(variable_col != "NA"),
-             aes(color = variable_col), 
+  geom_point(data = parks2 %>% filter(variable != "NA"),
+             aes(color = variable), 
              size = 2) +
+  annotate("text", x = 2014.7, y = 90, 
+           label = "Rank is based on \ndog parks per\n 100,000 residents",
+           color = "white") +
   scale_y_reverse(breaks = 100:1) +
-  coord_cartesian(ylim = c(101,1)) +
+  coord_cartesian(ylim = c(96,4)) +
   scale_x_continuous(breaks = seq(2015, 2020, 1), 
                      limits= c(2014.2, 2020.8)) +
      scale_color_manual(values = c("#F2D9F3",   
@@ -120,8 +123,8 @@ parks2 %>%
                                    "#00FF00",
                                    "#0099FF")) +
   labs(title = "Top 100 dog friendly cities in the US",
-       subtitle = "US Midwest cities are highlighted. <b style='color:#942DC7;'>Madison, WI</b> is the top friendly city in the Midwest",
-       caption = "Source =  | Vizualization: @maxwelco") 
+       subtitle = "Among the highlighted US Midwest cities, <b style='color:#942DC7;'>Madison, WI</b> is the best city to have dogs",
+       caption = "Source:  The Trust for Public Land | Vizualization: @maxwelco") 
 
 ggsave("fig.png", height = 12, width = 8)
 ```
@@ -132,23 +135,23 @@ parks2 %>%
   ggplot(aes(x = year, y = rank, group = city, label = city)) +
   scale_y_reverse(breaks = 50:1) +
   coord_cartesian(ylim = c(51,1)) +
-  geom_line(data = parks2 %>% filter(variable_col == "NA"),
+  geom_line(data = parks2 %>% filter(variable == "NA"),
                                       color = "#39393A", size = 1) +
-  geom_point(data = parks2 %>% filter(variable_col == "NA"),
+  geom_point(data = parks2 %>% filter(variable == "NA"),
                                       color = "#39393A", size = 2) +
-  geom_line(data = parks2 %>% filter(variable_col != "NA"),
-                                       aes(color = variable_col), size = 1) +
-  geom_point(data = parks2 %>% filter(variable_col != "NA"),
-                                       aes(color = variable_col), size = 2) +
+  geom_line(data = parks2 %>% filter(variable != "NA"),
+                                       aes(color = variable), size = 1) +
+  geom_point(data = parks2 %>% filter(variable != "NA"),
+                                       aes(color = variable), size = 2) +
   scale_x_continuous(breaks = seq(2015, 2020, 1), limits= c(2015, 2020), 
                      expand = c(.05, .05)) +
   geom_text(data = parks2 %>% filter(year == "2015"),
-            mapping = aes(label = city, x = 2014.99, color = variable_col),
+            mapping = aes(label = city, x = 2014.99, color = variable),
             hjust = "right",
             fontface = "bold",
             size = 2) +
   geom_text(data = parks2 %>% filter(year == "2020"),
-            mapping = aes(label = city, x = 2020.2, color = variable_col),
+            mapping = aes(label = city, x = 2020.2, color = variable),
             hjust = "left",
             fontface = "bold",
             size = 2) +
