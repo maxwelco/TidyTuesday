@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 26 - Dog parks
+
+![dos](2021/week_26-parks/fig.png)
+
 
 ### Week 25 - duBois tweets
 
