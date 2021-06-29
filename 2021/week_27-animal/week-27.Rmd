@@ -1,0 +1,72 @@
+---
+title: "week-27"
+author: "Maxwel Coura Oliveira"
+date: "6/29/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggridges)
+```
+
+
+
+```{r}
+animal_rescues <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-29/animal_rescues.csv')
+```
+
+
+```{r}
+animal_rescues %>% 
+  mutate(animal_group_parent = str_to_lower(animal_group_parent)) %>% 
+  filter(animal_group_parent %in% c("cat", "dog", "fox", "bird")) %>% 
+  mutate(date_time_of_call = lubridate::dmy_hm(date_time_of_call)) %>%
+  mutate(month = lubridate::month(date_time_of_call,
+                                  label = TRUE,
+                                  abbr = TRUE)) %>% 
+  mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
+  count(month, animal_group_parent, day) %>% 
+  ggplot(aes(x = month, y = day, fill = n)) +
+  geom_tile() +
+  coord_flip() +
+    scale_fill_viridis_c(option = "C")
+```
+
+
+```{r}
+animal_rescues %>% 
+  mutate(animal_group_parent = str_to_lower(animal_group_parent)) %>% 
+  filter(animal_group_parent %in% c("cat", "dog", "fox", "bird")) %>% 
+  mutate(date_time_of_call = lubridate::dmy_hm(date_time_of_call)) %>%
+  mutate(month = lubridate::month(date_time_of_call,
+                                  label = TRUE,
+                                  abbr = TRUE)) %>% 
+  mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
+  count(month, animal_group_parent, day) %>% 
+  ggplot(aes(x = month, y = n, fill = animal_group_parent)) +
+  geom_bar(stat = "identity", position = "fill") +
+  coord_flip() +
+    scale_fill_viridis_d(option = "C")
+```
+
+
+```{r}
+animal_rescues %>% 
+  mutate(animal_group_parent = str_to_lower(animal_group_parent)) %>% 
+  filter(animal_group_parent %in% c("cat", "dog", "fox", "bird")) %>% 
+  mutate(date_time_of_call = lubridate::dmy_hm(date_time_of_call)) %>%
+  mutate(month = lubridate::month(date_time_of_call,
+                                  label = TRUE,
+                                  abbr = TRUE)) %>% 
+  mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
+  count(month, animal_group_parent, day) %>% 
+  ggplot(aes(x = day, y = n, fill = animal_group_parent)) +
+  geom_bar(stat = "identity", position = "fill") +
+    scale_fill_viridis_d(option = "C")
+```
+
