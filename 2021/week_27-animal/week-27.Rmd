@@ -11,13 +11,21 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
-library(ggridges)
+library(ggtext)
+library(ggthemes)
+library(patchwork)
 ```
 
 
 
 ```{r}
 animal_rescues <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-06-29/animal_rescues.csv')
+```
+
+
+```{r}
+animal_rescues %>% 
+  mutate(animal_group_parent = str_to_lower(animal_group_parent))
 ```
 
 
@@ -30,11 +38,14 @@ animal_rescues %>%
                                   label = TRUE,
                                   abbr = TRUE)) %>% 
   mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
-  count(month, animal_group_parent, day) %>% 
+  count(month, pump_count, day) %>% 
   ggplot(aes(x = month, y = day, fill = n)) +
   geom_tile() +
   coord_flip() +
-    scale_fill_viridis_c(option = "C")
+  theme_bw() +
+  labs(x = NULL, y = NULL) +
+  scale_fill_viridis_c(option = "C") +
+  theme(legend.position = "none") -> pump_hours
 ```
 
 
@@ -51,7 +62,8 @@ animal_rescues %>%
   ggplot(aes(x = month, y = n, fill = animal_group_parent)) +
   geom_bar(stat = "identity", position = "fill") +
   coord_flip() +
-    scale_fill_viridis_d(option = "C")
+  scale_fill_viridis_d(option = "C") +
+  theme(legend.position = "none") -> animal_month
 ```
 
 
@@ -67,6 +79,14 @@ animal_rescues %>%
   count(month, animal_group_parent, day) %>% 
   ggplot(aes(x = day, y = n, fill = animal_group_parent)) +
   geom_bar(stat = "identity", position = "fill") +
-    scale_fill_viridis_d(option = "C")
+  scale_fill_viridis_d(option = "C") +
+  theme(legend.position = "none") -> animal_day
+```
+
+
+```{r}
+animal_day / pump_hours 
+
+ggsave("fig.png")
 ```
 
