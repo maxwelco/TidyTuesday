@@ -5,7 +5,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
-### Week 27 - Aniaml rescue
+### Week 27 - Animal rescue
 
 ![dos](2021/week_27-animal/fig.png)
 
