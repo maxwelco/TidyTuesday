@@ -176,7 +176,7 @@ animal_week / wrap_elements(full = animal_month) | animal_day / wrap_elements(fu
 ```{r}
 fig +
   plot_annotation(title = "Ten years of <b style='color:#EA738DFF;'>Cats</b> and <b style='color:#CBCE91FF;'>dogs</b> rescues in **London**",
-                  subtitle = "Year around a 3:1 ratio of <b style='color:#EA738DFF;'>cats</b> to <b style='color:#CBCE91FF;'>dogs</b> are rescued, except to warm and cold months <br>Rescued <b style='color:#EA738DFF;'>cats</b> slightly increased in warmer months, which demanded <b style='color:#7DF2FF;'>more truck pump hours</b>", 
+                  subtitle = "Year around a 3:1 ratio of <b style='color:#EA738DFF;'>cats</b> to <b style='color:#CBCE91FF;'>dogs</b> are rescued, except to warm and cold months <br>Rescued <b style='color:#EA738DFF;'>cats</b> slightly increased in warmer months, which demanded <b style='color:#c0e9d5;'>more truck pump hours</b>", 
                   caption = "Source: London.gov | Figure: @maxwelco",
                   theme = theme(plot.title = element_markdown(hjust = 0, 
                                                    family = "roboto",
