@@ -25,68 +25,168 @@ animal_rescues <- readr::read_csv('https://raw.githubusercontent.com/rfordatasci
 
 ```{r}
 animal_rescues %>% 
-  mutate(animal_group_parent = str_to_lower(animal_group_parent))
-```
-
-
-```{r}
-animal_rescues %>% 
   mutate(animal_group_parent = str_to_lower(animal_group_parent)) %>% 
-  filter(animal_group_parent %in% c("cat", "dog", "fox", "bird")) %>% 
+  filter(animal_group_parent %in% c("cat", "dog")) %>% 
   mutate(date_time_of_call = lubridate::dmy_hm(date_time_of_call)) %>%
   mutate(month = lubridate::month(date_time_of_call,
                                   label = TRUE,
                                   abbr = TRUE)) %>% 
   mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
-  count(month, pump_count, day) %>% 
+  count(month, pump_count, day) -> hour_an
+```
+
+
+```{r}
+(
+  hour_an %>% 
   ggplot(aes(x = month, y = day, fill = n)) +
   geom_tile() +
   coord_flip() +
-  theme_bw() +
+  theme_hc() + 
   labs(x = NULL, y = NULL) +
-  scale_fill_viridis_c(option = "C") +
-  theme(legend.position = "none") -> pump_hours
+  scale_fill_viridis_c(option = "G") +
+  theme(legend.position = "none",
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) -> pump_hours
+)
 ```
 
 
 ```{r}
 animal_rescues %>% 
   mutate(animal_group_parent = str_to_lower(animal_group_parent)) %>% 
-  filter(animal_group_parent %in% c("cat", "dog", "fox", "bird")) %>% 
+  filter(animal_group_parent %in% c("cat", "dog")) %>% 
   mutate(date_time_of_call = lubridate::dmy_hm(date_time_of_call)) %>%
   mutate(month = lubridate::month(date_time_of_call,
                                   label = TRUE,
                                   abbr = TRUE)) %>% 
   mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
-  count(month, animal_group_parent, day) %>% 
-  ggplot(aes(x = month, y = n, fill = animal_group_parent)) +
-  geom_bar(stat = "identity", position = "fill") +
+  count(month, animal_group_parent, day) -> month_an
+```
+
+
+```{r}
+(
+month_an %>% 
+ggplot(aes(x = month, y = n, fill = animal_group_parent)) +
+  geom_bar(stat = "identity", position = "fill", label = month) +
   coord_flip() +
-  scale_fill_viridis_d(option = "C") +
-  theme(legend.position = "none") -> animal_month
+  scale_fill_manual(values = c("#EA738DFF", "#CBCE91FF")) +
+  labs(x = NULL, y = NULL) +
+  geom_text(
+            aes(label = month), 
+            y = 0.05) +
+  theme_hc() +
+  geom_hline(yintercept = 0.25, size = 2) +
+  theme(legend.position = "none",
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) -> animal_month
+)
 ```
 
 
 ```{r}
 animal_rescues %>% 
   mutate(animal_group_parent = str_to_lower(animal_group_parent)) %>% 
-  filter(animal_group_parent %in% c("cat", "dog", "fox", "bird")) %>% 
+  filter(animal_group_parent %in% c("cat", "dog")) %>% 
   mutate(date_time_of_call = lubridate::dmy_hm(date_time_of_call)) %>%
+  mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
   mutate(month = lubridate::month(date_time_of_call,
                                   label = TRUE,
                                   abbr = TRUE)) %>% 
-  mutate(day = as_factor(lubridate::day(date_time_of_call))) %>% 
-  count(month, animal_group_parent, day) %>% 
+  count(month, animal_group_parent, day) -> day_an
+```
+
+
+```{r}
+(
+day_an %>% 
   ggplot(aes(x = day, y = n, fill = animal_group_parent)) +
   geom_bar(stat = "identity", position = "fill") +
-  scale_fill_viridis_d(option = "C") +
-  theme(legend.position = "none") -> animal_day
+  scale_fill_manual(values = c("#EA738DFF", "#CBCE91FF")) +
+  labs(x = NULL, y = NULL) +
+  theme_hc() +
+  geom_hline(yintercept = 0.25, size = 2) +
+  geom_text(
+            aes(label=day), 
+            y = 0.04) +
+  geom_curve(aes(x = 3.5, y = 0.26, 
+                               xend = 4, yend = 0.4),
+             arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = -0.3) +
+  annotate("text", x = 4.7, y = 0.47, fontface = "bold",
+           label = "The 25% line", size = 4) +
+  theme(legend.position = "none",
+        axis.text = element_blank(),
+        axis.ticks = element_blank()) -> animal_day
+)
+```
+
+```{r}
+animal_rescues %>% 
+  mutate(animal_group_parent = str_to_lower(animal_group_parent)) %>% 
+  filter(animal_group_parent %in% c("cat", "dog")) %>% 
+  mutate(date_time_of_call = lubridate::dmy_hm(date_time_of_call)) %>%
+  mutate(month = lubridate::month(date_time_of_call,
+                                  label = TRUE,
+                                  abbr = TRUE)) %>% 
+  mutate(week = lubridate::wday(date_time_of_call,
+                                  label = TRUE,
+                                  abbr = TRUE)) %>% 
+  count(month, animal_group_parent, week) -> week
 ```
 
 
 ```{r}
-animal_day / pump_hours 
+(
+week %>% 
+  ggplot(aes(x = week, y = n, 
+             fill = animal_group_parent, 
+             label = week)) +
+  geom_bar(stat = "identity", position = "fill") +
+  scale_fill_manual(values = c("#EA738DFF", "#CBCE91FF")) +
+  geom_text(
+            aes(label=week), 
+            y = 0.04) +
+  labs(x = NULL, y = NULL) +
+  theme_hc() +
+#  geom_hline(yintercept = 0.25, size = 2) +
+  theme(legend.position = "none",
+        axis.text = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.ticks.x = element_blank()) -> animal_week
+)
+```
 
-ggsave("fig.png")
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Roboto", "roboto") 
+```
+
+
+       
+
+```{r}
+animal_week / wrap_elements(full = animal_month) | animal_day / wrap_elements(full =pump_hours) -> fig
+```
+
+
+```{r}
+fig +
+  plot_annotation(title = "<b style='color:#EA738DFF;'>Cats</b> and <b style='color:#CBCE91FF;'>dogs</b> rescues in **London**",
+                  subtitle = "Year around a 3:1 ratio of <b style='color:#EA738DFF;'>cats</b> to <b style='color:#CBCE91FF;'>dogs</b> are rescued, except to warm and cold months <br>Rescued <b style='color:#EA738DFF;'>cats</b> slightly increased in warmer months, which demanded <b style='color:#7DF2FF;'>more truck pump hours</b>", 
+                  caption = "Source: London.gov | Figure: @maxwelco",
+                  theme = theme(plot.title = element_markdown(hjust = 0, 
+                                                   family = "roboto",
+                                                   size = 20),
+                     plot.subtitle = element_markdown(family = "roboto",
+                                                      size = 12),
+                     plot.caption = element_markdown(family = "roboto",
+                                                      size = 7)))
+
+
+ggsave("fig.png", width = 12, height = 6)
 ```
 
