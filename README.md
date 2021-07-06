@@ -5,9 +5,13 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 28 - Animal rescue
+
+![independence](2021/week_28-independence/fig.png)
+
 ### Week 27 - Animal rescue
 
-![dos](2021/week_27-animal/fig.png)
+![animals](2021/week_27-animal/fig.png)
 
 ### Week 26 - Dog parks
 
