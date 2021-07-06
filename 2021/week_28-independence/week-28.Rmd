@@ -1,0 +1,123 @@
+---
+title: "week-28"
+author: "Maxwel Coura Oliveira"
+date: "7/5/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(ggflags)
+library(ggtext)
+library(ggthemes)
+```
+
+
+
+
+```{r}
+holidays <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-06/holidays.csv')
+```
+
+```{r}
+holidays %>% 
+  filter(country %in% c("Brazil", "Uruguay", "Argentina", "Chile",
+                        "Peru", "Bolivia", "Colombia", "Paraguay",
+                        "Venezuela", "Ecuador")) %>% 
+  mutate(ind_from = if_else(country == "Brazil", "pt", "es")) -> holidays1
+```
+
+
+```{r}
+holidays1 %>% 
+  filter(country == "Ecuador") %>% 
+  filter(name_of_holiday == "Independence Day") %>% 
+  dplyr::select(event_commemorated_and_notes) %>% 
+  rename(label = event_commemorated_and_notes) -> label
+```
+
+
+```{r}
+label <- "Ecuador was the first country to proclaim independence <br>on **August 10, 1809**, but failed with the execution of all<br> the conspirators of the movement on **August 2, 1810**"
+
+label2 <- "The Republic of Ecuador would eventually emerge <br>after the *Battle of Pichincha* on **May 24, 1822**"
+
+label3 <- "Brazil was the only Portuguese <br>colony in the Americas"
+```
+
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Bungee", "bungee") 
+font_add_google("Niramit", "niramit")
+```
+
+
+```{r}
+holidays1 %>% 
+  ggplot(aes(x = date_parsed, y = country, 
+             country = ind_from,
+             group = country)) +
+  scale_x_date(date_labels = "%Y", date_breaks = "2 year") +
+  geom_point() +
+  geom_line(alpha = 0.3, size = 2, color = "black") +
+  geom_flag(size = 9) +
+  labs(title = "The colonial liberation of South America",
+       subtitle = "Around 200 years ago South American countries declared independence from <b style='color:#F1BF00;'>Spain</b> <img src='https://cdn.countryflags.com/thumbs/spain/flag-round-250.png' width='10'/> or <b style='color:#ff0000;'>Portugal</b> <img src='https://cdn.countryflags.com/thumbs/portugal/flag-round-250.png' width='10'/>",
+       caption = "Source: Wikipedia | Figure: @maxwelco",
+       x = NULL,
+       y = NULL) +
+  theme_hc() +
+  theme(plot.title.position = "plot",
+        plot.title = element_markdown(family = "bungee", size = 15),
+        plot.subtitle = element_markdown(family = "niramit", size = 11),
+        plot.caption = element_markdown(family = "niramit", size = 6, color = "gray80"),
+        axis.text = element_markdown(family = "niramit")) -> fig
+```
+
+
+```{r}
+fig +
+  geom_richtext(aes(label = label,
+                    y = 8.5, 
+                    x = as.Date("1810-06-01")),
+                size = 3,
+                fill = "#F5F5DC",
+                family = "niramit",
+                hjust = 0) +
+  geom_richtext(aes(label = label2,
+                    y = 6.8, 
+                    x = as.Date("1814-01-21")),
+                size = 3, 
+                fill = "#F5F5DC",
+                family = "niramit",
+                hjust = 0) +
+  geom_richtext(aes(label = label3,
+                    y = 3, 
+                    x = as.Date("1816-10-21")),
+                size = 3, 
+                fill = "#fff7f6",
+                family = "niramit",
+                hjust = 0) -> fig1
+```
+
+
+
+```{r}
+fig1 +
+  geom_curve(x = as.Date("1809-07-21"), y = 6.5, xend = as.Date("1810-02-21"), yend = 8,
+             arrow = arrow(length = unit(0.07, "inch")), 
+             size = 0.4, curvature = -0.3) + 
+  geom_curve(x = as.Date("1822-03-21"), y = 6.5, xend = as.Date("1821-10-21"), yend = 6.9,
+             arrow = arrow(length = unit(0.07, "inch")), 
+             size = 0.4, curvature = 0.3) +
+  geom_curve(x = as.Date("1822-03-21"), y = 2.8, xend = as.Date("1821-10-21"), yend = 2.7,
+             arrow = arrow(length = unit(0.07, "inch")), 
+             size = 0.4, curvature = -0.3) 
+
+ggsave("fig.png")
+```
+
