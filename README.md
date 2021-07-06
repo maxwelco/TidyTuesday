@@ -5,7 +5,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
-### Week 28 - Animal rescue
+### Week 28 - Independence
 
 ![independence](2021/week_28-independence/fig.png)
 
