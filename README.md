@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 29 - Scooby-Doo Episodes
+
+![scooby-Doo episodes](2021/week_29-scoobdoo/fig.png)
+
 ### Week 28 - Independence
 
 ![independence](2021/week_28-independence/fig.png)
