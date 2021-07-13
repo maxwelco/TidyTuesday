@@ -1,0 +1,73 @@
+---
+title: "week-29"
+author: "Maxwel Coura Oliveira"
+date: "7/13/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(ggtext)
+library(ggstream)
+```
+
+
+```{r}
+scoobydoo <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-13/scoobydoo.csv')
+```
+
+
+```{r}
+scoobydoo %>% 
+  mutate(year = lubridate::year(date_aired)) %>% 
+  mutate_at(c(18:32), as.logical) %>% 
+  group_by(year) %>% 
+  summarise(scooby = sum(captured_scooby),
+            fred = sum(captured_fred),
+            daphnie = sum(captured_daphnie),
+            velma = sum(captured_velma),
+            shaggy = sum(captured_shaggy),
+            scooby = sum(captured_scooby),
+            ) %>% 
+  pivot_longer(cols = 2:6, names_to = "person", 
+               values_to = "n") -> scoobydoo1
+```
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Mystery Quest", "quest") 
+#font_add_google("Niramit", "niramit")
+```
+
+
+```{r}
+theme_set(theme_hc(base_family = "quest"))
+scoobydoo1 %>% 
+  mutate(person = str_to_title(person)) %>% 
+  ggplot(aes(x = year, y = n, fill = person)) +
+  geom_stream(extra_span = 0.2, type = "mirror",
+              true_range = "none", bw = 1) +
+  geom_stream_label(aes(label = person), color = "white", 
+                    family = "quest") +
+  scale_fill_viridis_d(option = "H") +
+  labs(x = NULL, y = NULL,
+       title = "Scooby-Doo Episodes",
+       subtitle = "Characters captured by villains are nearly similar across years",
+       caption = "Source: Kaggle | Figure: @maxwelco") +
+#  theme_hc() +
+  theme(legend.position = "none",
+        plot.title = element_markdown(family = "quest", size = 20),
+        plot.subtitle = element_markdown(hjust = 0.5),
+        plot.caption = element_markdown(size = 7, 
+                                        color = "gray70",
+                                        hjust = 1))
+
+ggsave("fig.png")
+```
+
+
+
+
