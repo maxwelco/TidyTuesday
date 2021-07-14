@@ -44,22 +44,24 @@ font_add_google("Mystery Quest", "quest")
 
 
 ```{r}
-theme_set(theme_hc(base_family = "quest"))
 scoobydoo1 %>% 
   mutate(person = str_to_title(person)) %>% 
   ggplot(aes(x = year, y = n, fill = person)) +
   geom_stream(extra_span = 0.2, type = "mirror",
               true_range = "none", bw = 1) +
-  geom_stream_label(aes(label = person), color = "white", 
+  geom_stream_label(aes(label = person), color = "#FFFFFF", 
                     family = "quest") +
   scale_fill_viridis_d(option = "H") +
   labs(x = NULL, y = NULL,
        title = "Scooby-Doo Episodes",
-       subtitle = "Characters captured by villains are nearly similar across years",
+       subtitle = "Captured characters by villains are nearly homogeneous across years",
        caption = "Source: Kaggle | Figure: @maxwelco") +
-#  theme_hc() +
+  theme_fivethirtyeight(base_family = "quest") +
   theme(legend.position = "none",
-        plot.title = element_markdown(family = "quest", size = 20),
+        panel.grid = element_blank(),
+        axis.line.y = element_blank(),
+        plot.title = element_markdown(family = "quest", 
+                                      size = 20, hjust = 0.5),
         plot.subtitle = element_markdown(hjust = 0.5),
         plot.caption = element_markdown(size = 7, 
                                         color = "gray70",
