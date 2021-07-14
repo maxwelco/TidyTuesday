@@ -55,7 +55,7 @@ scoobydoo1 %>%
        title = "Scooby-Doo Episodes",
        subtitle = "Captured characters by villains are nearly homogeneous across years",
        caption = "Source: Kaggle | Figure: @maxwelco") +
-  theme_fivethirtyeight(base_family = "quest") +
+  theme_excel_new(base_family = "quest") +
   theme(legend.position = "none",
         panel.grid = element_blank(),
         axis.line.y = element_blank(),
