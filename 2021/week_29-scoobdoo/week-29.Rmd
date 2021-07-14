@@ -39,7 +39,6 @@ library(extrafont)
 library(showtext)
 showtext_auto()
 font_add_google("Mystery Quest", "quest") 
-#font_add_google("Niramit", "niramit")
 ```
 
 
