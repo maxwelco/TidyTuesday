@@ -69,6 +69,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ![CEO](/2021/week_17-netflix/fig.png)
 
+### Week 15 - Deforestation
+
+![scooby-Doo episodes](2021/week_15-deforestation/fig.png)
+
 
 ### Week 13 - Votes UN
 

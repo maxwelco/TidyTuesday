@@ -5,18 +5,14 @@ date: "4/5/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ```{r}
 tuesdata <- tidytuesdayR::tt_load(2021, week = 15)
 
 forest_change <- tuesdata$forest
-forest_area <- tuesdata$forest_area
-brazil_loss <- tuesdata$brazil_loss
-soybean_use <- tuesdata$soybean_use
-vegetable_oil <- tuesdata$vegetable_oil
+#forest_area <- tuesdata$forest_area
+#brazil_loss <- tuesdata$brazil_loss
+#soybean_use <- tuesdata$soybean_use
+#vegetable_oil <- tuesdata$vegetable_oil
 ```
 
 
@@ -24,23 +20,23 @@ vegetable_oil <- tuesdata$vegetable_oil
 
 
 ```{r}
-library(dplyr)
 library(ggplot2)
 library(ggrepel)
 library(tidyverse)
-library(patchwork)
+#library(patchwork)
 library(ggthemes)
-library(treemapify)
+#library(treemapify)
 library(ggtext)
 ```
+
 
 ```{r}
 library(extrafont)
 library(showtext)
 showtext_auto()
 
-font_add_google("Noto Sans JP", "noto_jp")
-font_add_google("Aclonica", "aclonica")
+font_add_google("Alfa Slab One", "alfa")
+font_add_google("Roboto", "roboto")
 ```
 
 
@@ -58,33 +54,46 @@ forest_change1 <- forest_change %>%
 
 
 
+```{r}
+forest_change1 %>%
+ggplot(aes(x = reorder(entity, net_forest_conversion), 
+           y = net_forest_conversion, 
+           fill = variable_col, label = entity)) +
+  geom_col() + 
+
+  scale_fill_manual(values = c("#009C3B", "#FF0000", "#9c9c8d")) +
+  labs(title = "Net forest conversion in hectares",
+       subtitle = "<b style='color:#009C3B;'>Brazil</b> and <b style='color:#FF0000;'>China</b> lead net forest conversion in opposite ways", 
+       caption = "Source: Our World in Data | Figure: @maxwelco",
+       x = "", y = "") +
+  theme_void(base_family = "roboto") +
+  theme(legend.position = "none",
+        plot.title = element_markdown(size = 20, family = "alfa",
+                                      margin = margin(3, 0, 3, 0)),
+        plot.subtitle = element_markdown(),
+        plot.caption = element_markdown(size = 7)) -> fig
+```
+
 
 
 ```{r}
-main <- forest_change1 %>%
-ggplot(aes(x = reorder(entity, net_forest_conversion), y = net_forest_conversion, 
-              fill = variable_col, label = entity)) +
-  geom_col() + 
+fig +
   annotate("rect", xmin = 66, xmax = 132, ymin = 0, ymax = 11000000,
   alpha = .05, fill = "#00FF00") +
   annotate("rect", xmin = 0, xmax = 66, ymin = 0, ymax = -11000000,
   alpha = .05, fill = "#FF0000") +
-  geom_label_repel(box.padding   = 0.5, 
-                  point.padding = 0.2,
-                  max.overlaps = 2) +
-  scale_fill_manual(values = c("#009C3B", "#FF0000", "#9c9c8d")) +
-  labs(title = "Net forest conversion in hectares",
-       subtitle = "Brazil and China lead net forest conversion in opposite ways", caption = "Source: Our World in Data | Figure: @maxwelco",
-       x = "", y = "") +
-  theme_void() +
-  theme(legend.position = "none",
-        text = element_text(family = "noto_jp"),
-        plot.title = element_markdown(size = 20, family = "aclonica",
-                                      margin = margin(3, 0, 3, 0)),
-        plot.caption = element_markdown(size = 7, 
-                                        family = "aclonica")) +
-  
-  ggsave("net_conversion.pdf")
+  geom_richtext(x = 12, y = -8723950, 
+                hjust = 0,
+                fill = NA,
+                label.color = NA,
+                label = "<b style='color:#009C3B;'>Brazil</b> has the **highest** <b style='color:#FF0000;'>negative</b> forest <br>net conversion of 10.7 million ha") +
+    geom_richtext(x = 76, y = 8220540, 
+                hjust = 0,
+                fill = NA,
+                label.color = NA,
+                label = "<b style='color:#FF0000;'>China</b> has the **highest** <b style='color:#009C3B;'>positive</b> forest <br>net conversion of 8.2 million ha") 
+
+ggsave("fig.png", bg = "white")
 ```
 
 
@@ -92,8 +101,16 @@ ggplot(aes(x = reorder(entity, net_forest_conversion), y = net_forest_conversion
 
 
 
+
+
+
+
+
+
+
 ```{r}
-sub1 <- brazil_loss %>% 
+theme_set(theme_void(base_family = "roboto"))
+brazil_loss %>% 
   filter(code %in% c("BRA")) %>% 
   pivot_longer(cols = commercial_crops:small_scale_clearing, 
                names_to = "types",  values_to = "value") %>%
@@ -115,13 +132,14 @@ sub1 <- brazil_loss %>%
   geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
                     grow = TRUE, min.size = 0) +
   scale_fill_brewer(palette = "Paired") +
-  theme(legend.position = "none")
-sub1
+  theme(legend.position = "none") -> sub1
+
 ```
 
 
 ```{r}
-sub2 <- forest_area %>% 
+theme_set(theme_void(base_family = "roboto"))
+forest_area %>% 
   filter(year %in% c(1990, 2020)) %>% 
   mutate(highlight = if_else(entity %in% c("Brazil", "China"), TRUE, FALSE),
          variable_col = if_else(highlight == TRUE, entity, "NA")) %>% 
@@ -130,12 +148,12 @@ sub2 <- forest_area %>%
   geom_line(aes(color = variable_col)) +
   geom_point(aes(color = variable_col)) +
   scale_color_manual(values = c("#009C3B", "#FF0000", "#e5e5e5")) +
-  annotate("text", x = 2005, y = 9, size = 3,
-           label = "In 30 years, % of global forest area in Brazil reduced from 13.9 to 12.2 \nbut China increase from from 3.7 to 5.41") +
+  geom_richtext(x = 2005, y = 9, 
+                size = 3,
+                fill = NA, label.color = NA,
+           label = "In 30 years, % of global forest area in Brazil reduced from 13.9 to 12.2 but China increase from from 3.7 to 5.41") +
   theme_void() +
-  theme(legend.position = "none")
-
-sub2
+  theme(legend.position = "none") -> sub2
 ```
 
 
@@ -143,10 +161,11 @@ sub2
 
 ```{r}
 #library(patchwork)
-join <- main + inset_element(sub1, left = 0.55, bottom = 0.1, right = 0.99, top = 0.48, 
+join <- main + inset_element(sub1, left = 0.51, 
+                             bottom = 0.055, right = 0.99, top = 0.45, 
                    on_top = TRUE, align_to = 'full') +
-  inset_element(sub2, left = 0.10, bottom = 0.5, 
-                     right = 0.56, top = 0.85, align_to = 'full')
+  inset_element(sub2, left = 0.001, bottom = 0.5, 
+                     right = 0.50, top = 0.80, align_to = 'full')
   
 
 #join 
