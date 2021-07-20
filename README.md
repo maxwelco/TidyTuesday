@@ -7,7 +7,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ### Week 30 - Scooby-Doo Episodes
 
-![US Midwest drought figure](2021/week_30-usdroughto/fig.png)
+![US Midwest drought figure](2021/week_30-usdrought/fig.png)
 
 ### Week 29 - Scooby-Doo Episodes
 
