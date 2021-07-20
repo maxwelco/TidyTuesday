@@ -1,0 +1,130 @@
+---
+title: "week-30"
+author: "Maxwel Coura Oliveira"
+date: "7/19/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggtext)
+library(ggthemes)
+```
+
+
+```{r}
+drought <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-20/drought.csv')
+```
+
+
+```{r}
+# US Midwest map
+map <- map_data("state") %>% #to specify the division of the data
+  filter(region %in% c("nebraska", "kansas", "south dakota", "wisconsin",
+                       "iowa", "missouri", "minnesota", "wisconsin", "illinois",
+                       "michigan", "ohio", "indiana", "north dakota"))
+
+
+map %>% 
+ggplot(mapping = aes(x = long, #longitude
+                     y = lat,  #latitude
+                     group = group)) +
+  geom_polygon(color="black", fill="white") +
+  labs(y = NULL, x = NULL) +
+  coord_map() +
+#  theme_modern_rc(
+#    plot_margin = margin(10, 10, 10, 10),
+#    axis = FALSE,
+#    ticks = FALSE
+#  ) +
+  theme_void() +
+  theme(panel.background = element_rect(fill = "transparent"), # bg of the panel
+    plot.background = element_rect(fill = "transparent", color = NA))
+ggsave("map.png", bg = "transparent")
+```
+
+
+
+
+```{r}
+drought %>% 
+  mutate(drought_lvl = fct_recode(drought_lvl,
+                                  "No drought" = "None",  
+                                  "Abnormally dry" = "D0",
+                                  "Moderate" = "D1",
+                                  "Severe" = "D2", 
+                                  "Extreme" = "D3",
+                                  "Exceptional drought" = "D4")) %>% 
+  filter(!drought_lvl %in% c("No drought")) %>% 
+  filter(state_abb %in% c("NE", "SD", "ND", "MN", "WI", 
+                          "IA", "KS", "MO", "IL", "IA",
+                          "MI", "OH")) %>% 
+  group_by(valid_start, drought_lvl) %>% 
+  summarise(area_pct = mean(area_pct)) -> drought1
+```
+
+```{r}
+# figure
+library(ggimg)
+library(extrafont)
+library(hrbrthemes)
+library(showtext)
+showtext_auto()
+font_add_google("Lato", "lato") 
+font_add_google("Bebas Neue", "bebas") 
+
+library(RColorBrewer)
+brewer.pal(n=5,"Oranges") # color ID
+```
+
+
+
+
+```{r warning = FALSE}
+drought1 %>% 
+  ggplot(aes(x = valid_start, y = area_pct, 
+             fill = drought_lvl)) +
+  labs(x = NULL, y = NULL,
+       title = "Percent of US Midwest in drought conditions",
+       subtitle = "<b style='color:#A63603;'>Exceptional drought</b>     <b style='color:#E6550D;'>Extreme</b>     <b style='color:#FD8D3C;'>Severe</b>     <b style='color:#FDBE85;'>Moderate</b>     <b style='color:#FEEDDE;'>Abnormally dry</b>",
+       caption = "Source: U.S. Drought Monitor | Figure: @maxwelco") +
+  geom_area(position = 'identity', color = NA) +
+  scale_x_date(date_labels = "%Y") +
+  scale_y_continuous(labels = scales::percent_format(scale = 1, suffix = "%")) +
+  scale_fill_brewer(palette = "Oranges") +
+  theme_modern_rc(base_family = "lato",
+                  plot_margin = margin(5, 5, 5, 5)) +
+  theme(legend.position = "none",
+        plot.title = element_markdown(face = "bold"),
+        plot.subtitle = element_markdown(family = "bebas"),
+        panel.border = element_blank(),
+        plot.caption = element_markdown(color = "gray50", size = 6)) -> main
+
+#ggsave("fig.png", bg = "white", width = 9)
+```
+
+
+```{r warning = FALSE}
+# not used
+# another way to add the map
+library(patchwork)
+
+main |inset_element(map_fig,
+                    align_to = "full",
+                    clip = FALSE,
+                    on_top = TRUE,
+                    ignore_tag = TRUE,
+                    left = 0.7, 
+                    bottom = 0.7, 
+                    right = 0.9, 
+                    top = 1) -> fig
+
+fig +
+  plot_annotation(theme = theme_modern_rc(base_family = "lato",
+                  plot_margin = margin(5, 5, 5, 5)))
+  
+
+ggsave("fig.png", width = 9)
+```
+
+
