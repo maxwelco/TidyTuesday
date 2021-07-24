@@ -37,10 +37,13 @@ ggplot(mapping = aes(x = long, #longitude
 #    axis = FALSE,
 #    ticks = FALSE
 #  ) +
-  theme_void() +
-  theme(panel.background = element_rect(fill = "transparent"), # bg of the panel
-    plot.background = element_rect(fill = "transparent", color = NA))
-ggsave("map.png", bg = "transparent")
+  theme_map() +
+  theme(
+ #   panel.border = element_rect(color = NA),
+    panel.background = element_rect(fill = NA, color = NA), # bg of the panel
+    plot.background = element_rect(fill = NA, color = NA)) -> map_fig
+ map_fig
+#ggsave("map.png", bg = "transparent")
 ```
 
 
@@ -90,7 +93,8 @@ drought1 %>%
        caption = "Source: U.S. Drought Monitor | Figure: @maxwelco") +
   geom_area(position = 'identity', color = NA) +
   scale_x_date(date_labels = "%Y") +
-  scale_y_continuous(labels = scales::percent_format(scale = 1, suffix = "%")) +
+  scale_y_continuous(limits = c(0,100), 
+                     labels = scales::percent_format(scale = 1, suffix = "%")) +
   scale_fill_brewer(palette = "Oranges") +
   theme_modern_rc(base_family = "lato",
                   plot_margin = margin(5, 5, 5, 5)) +
