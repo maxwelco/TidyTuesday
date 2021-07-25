@@ -91,7 +91,7 @@ drought1 %>%
        title = "Percent of US Midwest in drought conditions",
        subtitle = "<b style='color:#A63603;'>Exceptional drought</b>     <b style='color:#E6550D;'>Extreme</b>     <b style='color:#FD8D3C;'>Severe</b>     <b style='color:#FDBE85;'>Moderate</b>     <b style='color:#FEEDDE;'>Abnormally dry</b>",
        caption = "Source: U.S. Drought Monitor | Figure: @maxwelco") +
-  geom_area(position = 'identity', color = NA) +
+  geom_area(position = 'stack', color = NA) +
   scale_x_date(date_labels = "%Y") +
   scale_y_continuous(limits = c(0,100), 
                      labels = scales::percent_format(scale = 1, suffix = "%")) +
