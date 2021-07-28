@@ -11,34 +11,30 @@ output: html_document
 ```{r}
 olympics <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv')
 ```
-```{r}
-olympics %>% 
-  filter(noc == "BRA") %>% 
-  filter(!is.na(medal)) %>% 
-  distinct(games, event, medal) %>% 
-  count(medal)
-```
+
 
 
 ```{r}
 library(tidyverse)
-library(reactablefmtr)
 library(ggflags)
+library(ggthemes)
+library(ggtext)
+library(countrycode)
 ```
 
 ```{r}
+# data with country and continents
 mobile <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-11-10/mobile.csv') %>% 
   dplyr::select(entity, continent) %>% 
   filter(continent == "Americas") -> country
-
-country
 ```
 
-  filter(!is.na(medal)) %>% 
+
 ```{r}
 country %>% 
   left_join(olympics, by = c("entity" = "team")) %>% 
-  filter(!entity %in% c("United States", "Canada") & season == "Summer") %>% 
+  filter(!entity %in% c("United States", "Canada") & 
+           season == "Summer") %>% 
   filter(!is.na(medal)) %>% 
   distinct(entity, games, event, medal) %>% 
   count(entity, medal) -> latin_am
@@ -56,37 +52,10 @@ latin_am %>%
   mutate(Rank = row_number()) -> latin_am1
 ```
 
-```{r}
-library(countrycode) #https://github.com/vincentarelbundock/countrycode
-
-flags <- latin_am1 %>% 
-  pull(entity) 
-
-countrycode(flags, 'country.name', 'unicode.symbol') %>% as_tibble() -> flags1
-
-latin_am1 %>% 
-  distinct(entity) %>% 
-  bind_cols(flags1) %>% 
-  unite("flag_country", c("value", "entity"), sep = " ") -> flag_country
-```
 
 
-```{r}
-gold <- "https://image.flaticon.com/icons/png/512/625/625394.png"
 
-latin_am1 %>% 
-  bind_cols(flag_country) %>% 
-  dplyr::select("#", flag_country, Gold, Silver, Bronze, Total) %>% 
-  rename(Country = flag_country) %>% 
-  reactable(.,
-            theme = fivethirtyeight(),
-            pagination = FALSE,
-            resizable = TRUE,
-            columns = list(
-            Gold = colDef(name =  "Gold", width = 50))) -> medal
-medal %>%
-save_reactable("table.png")
-```
+
 
   
 ```{r}
@@ -96,62 +65,118 @@ latin_am1 %>%
                names_to = "medal", 
                values_to = "n") %>% 
   dplyr::select(Rank, entity, medal, n, Total) %>% 
-  rename(Country = entity) -> latin_am
+  rename(Country = entity) -> latin_am2
 ```
+
+```{r}
+flags <- latin_am2 %>% 
+  pull(Country) 
+
+countrycode(flags, 'country.name', 'iso2c') %>% 
+  as_tibble() %>% 
+  rename(flag = value) %>% 
+  mutate(flag = str_to_lower(flag)) -> flags1
+```
+
+```{r}
+latin_am2 %>% 
+  bind_cols(flags1) %>% 
+  mutate(Country = fct_recode(Country,
+       "US Virgin Islands" = "United States Virgin Islands")) -> latin_am3
+```
+
+
 
 ```{r}
 library(extrafont)
 library(showtext)
 showtext_auto()
 font_add_google("Lato", "lato") 
-```
-```{r}
-countrycode(flags, 'country.name', 'iso2c') %>% 
-  as_tibble() %>% 
-  rename(flag = value) %>% 
-  mutate(flag = str_to_lower(flag)) -> flag
-```
-
-```{r}
-latin_am %>% 
-  distinct(Country) %>% 
-  bind_cols(flag) -> flags1
-
-latin_am %>% 
-  left_join(flags1) -> latin_am1
+font_add_google("Play", "play") 
 ```
 
 
+
+
+
 ```{r}
-latin_am1 %>% 
+latin_am3 %>% 
   ggplot(aes(x = Rank, y = n, 
-           country = flag, 
-           label = Country)) +
-  geom_jitter(size = 6, width = 0.01,
-              aes(color = medal), show.legend = FALSE) +
+           country = flag)) +
+  geom_point(latin_am3 %>% 
+               filter(medal == "Gold"), 
+             mapping = aes(y = 45), 
+             size = 10, 
+             color = "gold", 
+             show.legend = FALSE) +
+  geom_text(latin_am3 %>% 
+               filter(medal == "Gold"),
+            mapping = aes(label = n, y = 45), 
+            fontface = "bold") +
+  geom_point(latin_am3 %>% 
+               filter(medal == "Silver"), 
+             mapping = aes(y = 55), 
+             size = 10, color = "#d6d6d6", 
+             show.legend = FALSE) +
+  geom_text(latin_am3 %>% 
+               filter(medal == "Silver"),
+            mapping = aes(label = n, y = 55),
+            fontface = "bold") +
+  geom_point(latin_am3 %>% 
+               filter(medal == "Bronze"), 
+                      mapping = aes(y = 65), 
+             size = 10, 
+             color = "#cd7f32", 
+             show.legend = FALSE) +
+  geom_text(latin_am3 %>% 
+               filter(medal == "Bronze"),
+            mapping = aes(label = n, y = 65),
+            fontface = "bold") +
   coord_flip() +
-  labs(x = NULL, y = NULL) +
-  geom_flag(latin_am1 %>% 
-              group_by(Country) %>% 
-              filter(n == min(n)),
-            mapping = aes(y = n - 10), hjust = 1) +
-  scale_color_manual(values = c("#977547", "#D6AF36", "#d6d6d6")) +
-  geom_text(latin_am1 %>% 
-              group_by(Country) %>% 
-              filter(n == min(n)),
-              mapping = aes(label = Country),
-            nudge_y = -15, hjust = 1, size = 5) +
   scale_x_reverse() +
-  scale_y_continuous(limits = c(-75, 100), breaks = seq(0, 80, 20)) +
-  theme_clean(base_family = "lato") +
-  theme(axis.text.y = element_blank(),
-        axis.title = element_blank())
+  scale_y_continuous(limits = c(5, 70)) -> fig1
+```
+
+```{r}
+symbol_ol <- "<img src='https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Olympic_rings_without_rims.svg/2560px-Olympic_rings_without_rims.svg.png' width='50'/>"
+```
+
+
+```{r}
+fig1 + 
+  geom_richtext(latin_am3 %>% 
+              group_by(Country) %>% 
+              filter(n == min(n)),
+              mapping = aes(y = 30, label = Country),
+            hjust = 1, size = 6, label.color = NA) +
+  geom_flag(latin_am3 %>% 
+              group_by(Country) %>% 
+              filter(n == min(n)),
+            mapping = aes(y = 33), hjust = 1, size = 7) +
+  labs(x = NULL, y = NULL,
+       title = "Latin America summer Olympics medals",
+       subtitle = symbol_ol,
+       caption = "Data from Athens 1896 to Rio 2016 | Source: Kaggle | Figure: @maxwelco") + 
+   theme_void(base_family = "lato") +
+   theme(axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.y = element_blank(),
+        panel.grid.minor = element_blank(),
+        plot.caption = element_markdown(hjust = 0.5,
+                                        color = "gray60",
+                                        size = 11),
+        plot.subtitle = element_markdown(hjust = 0.5,
+                                         margin=margin(0,0,-5,0)),
+        plot.title = element_markdown(family = "play", 
+                                      face = "bold",
+                                      size = 20, 
+                                      hjust = 0.5)) 
 
 ggsave("fig.png", bg = "white", height = 12)
 ```
-```{r}
-  geom_bar(stat = "identity", aes(fill = medal), show.legend = FALSE) +
-  coord_flip() +
-  scale_fill_manual(values = c("#977547", "#D6AF36", "#d6d6d6")) +
-```
+
+
+
+
+
 

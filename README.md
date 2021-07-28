@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 31 - Olympics
+
+![Latin America Olympics medals](2021/week_31-olympics/fig.png)
+
 ### Week 30 - US drought
 
 ![US Midwest drought figure](2021/week_30-usdrought/fig.png)
