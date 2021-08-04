@@ -1,0 +1,47 @@
+---
+title: "week-32"
+author: "Maxwel Coura Oliveira"
+date: "8/2/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+
+
+```{r}
+athletes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-03/athletes.csv')
+```
+
+```{r}
+athletes %>% 
+#  filter(year == 2016) %>% 
+  mutate(abb = if_else(abb == "GER" | abb == "FRG", "DEU", abb)) %>% 
+  distinct(year, abb, event, type, medal, country) %>% 
+#  filter(!is.na(grp_id)) %>% 
+  count(abb,  medal, sort = TRUE) %>% 
+  pivot_wider(id_cols = c("abb"), 
+                          names_from = "medal", values_from = "n") %>% 
+  arrange(desc(Gold)) %>% 
+  mutate_if(is_integer, ~ replace_na(., 0)) -> athletes1
+ 
+```
+
+
+```{r}
+library(countrycode)
+
+
+ISOcodes::ISO_3166_1 %>% 
+  as_tibble() -> codes
+
+flags <- athletes1 %>% 
+    left_join(codes, by = c("abb" = "Alpha_3"))  
+
+  rename(flag = value) %>% 
+  mutate(flag = str_to_lower(flag)) -> flags1
+```
+
