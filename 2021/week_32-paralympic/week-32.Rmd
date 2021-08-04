@@ -8,6 +8,9 @@ output: html_document
 
 ```{r}
 library(tidyverse)
+library(ggflags)
+library(ggtext)
+library(ggthemes)
 ```
 
 
@@ -26,8 +29,11 @@ athletes %>%
   pivot_wider(id_cols = c("abb"), 
                           names_from = "medal", values_from = "n") %>% 
   arrange(desc(Gold)) %>% 
-  mutate_if(is_integer, ~ replace_na(., 0)) -> athletes1
- 
+  mutate_if(is_integer, ~ replace_na(., 0)) %>% 
+  mutate(Rank = row_number()) %>% 
+  pivot_longer(cols = c("Gold", "Silver", "Bronze"), 
+               names_to = "medal",
+               values_to = "n") -> athletes1
 ```
 
 
@@ -38,10 +44,74 @@ library(countrycode)
 ISOcodes::ISO_3166_1 %>% 
   as_tibble() -> codes
 
-flags <- athletes1 %>% 
-    left_join(codes, by = c("abb" = "Alpha_3"))  
+athletes1 %>% 
+  left_join(codes, by = c("abb" = "Alpha_3")) %>% 
+  filter(Rank <= 10) -> athletes2
 
+flags <- athletes2 %>% 
+  pull(Name) 
+
+countrycode(flags, 'country.name', 'iso2c') %>% 
+  as_tibble() %>% 
   rename(flag = value) %>% 
   mutate(flag = str_to_lower(flag)) -> flags1
+```
+
+
+```{r}
+athletes2 %>% 
+  bind_cols(flags1) %>% 
+  mutate(label = case_when(
+    medal == "Gold" ~ "U+1F947",
+    medal == "Silver" ~ "U+1F948",
+    medal == "Bronze" ~ "U+1F949",
+    TRUE ~ NA_character_)) -> athletes3
+```
+
+
+```{r}
+athletes3 %>% 
+  ggplot(aes(x = Rank, y = n, 
+           country = flag, label = label)) +
+  geom_text(athletes3 %>% 
+               filter(medal == "Gold"),
+            mapping = aes(label = n, y = 45), 
+            fontface = "bold") +
+  geom_text(athletes3 %>% 
+               filter(medal == "Silver"),
+            mapping = aes(label = n, y = 50),
+            fontface = "bold") +
+  geom_text(athletes3 %>% 
+               filter(medal == "Bronze"),
+            mapping = aes(label = n, y = 55),
+            fontface = "bold") +
+  coord_flip() +
+  scale_x_reverse() +
+  geom_richtext(athletes3 %>% 
+              group_by(Name) %>% 
+              filter(n == min(n)),
+              mapping = aes(y = 39, label = Name),
+            hjust = 1, size = 6, label.color = NA) +
+  geom_flag(athletes3 %>% 
+              group_by(Name) %>% 
+              filter(n == min(n)),
+            mapping = aes(y = 40), hjust = 1, size = 7) +
+  scale_y_continuous(limits = c(28, 60)) +
+  theme_void() -> fig1
+```
+
+```{r}
+library(emo)
+fig1 + 
+  geom_text(family="EmojiOne", aes(label = label))
+```
+
+
+```{r}
+library(emojifont)
+
+search_emoji('medal')
+
+emoji('1st_place_medal')
 ```
 
