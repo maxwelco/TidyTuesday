@@ -10,6 +10,7 @@ output: html_document
 library(tidyverse)
 library(ggflags)
 library(ggtext)
+library(emoGG)
 library(ggthemes)
 ```
 
@@ -23,35 +24,85 @@ athletes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/t
 ```{r}
 athletes %>% 
   filter(abb == "BRA" & type == "Swimming") %>% 
-  count(gender, athlete, medal) %>% 
-  pivot_wider(id_cols = c(gender, athlete),
+  count(athlete, medal) %>% 
+  pivot_wider(id_cols = athlete,
               names_from = medal, values_from = n) %>% 
   mutate_if(is.integer, ~replace_na(., 0)) %>% 
   mutate(total = Gold + Silver + Bronze) %>% 
-  group_by(gender) %>% 
   arrange(desc(total)) %>% 
   mutate(Rank = row_number()) %>% 
-  filter(gender == "Men" & Rank <= 9 | gender == "Women") %>% 
   filter(!is.na(athlete)) %>% 
+  filter(Rank <= 10) %>% 
   pivot_longer(cols = c("Gold", "Silver", "Bronze"), 
                names_to = "medal", 
                values_to = "n") -> athletes1
 ```
 
+
+
 ```{r}
 athletes1 %>% 
-  ggplot(aes(x = fct_reorder(athlete, total), y = total, fill = medal)) +
-#  facet_wrap(~gender, scales = "free") +
+  mutate(first = str_extract(athlete, '[[:alpha:]][a-z]+|[a-z][[:alpha:]]+')) %>% 
+  mutate(last = str_extract(athlete, '([:upper:]|[:space:]){2,}')) %>% 
+  mutate(last = str_replace(last, "\\s[^ ]+$", "")) %>% 
+  mutate(last = str_to_title(last)) %>% 
+  unite("name", c("first", "last"), sep = " ") -> athletes2
+```
+
+
+```{r}
+library(showtext)
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Limelight", "limelight")
+font_add_google("Inconsolata", "inconsolata")
+font_add_google("Oswald", "oswald")
+```
+
+
+```{r}
+ athletes2 %>% 
+  ggplot(aes(x = Rank, y = total, 
+             fill = medal)) +
+  scale_x_reverse() + 
+  geom_text(data =  athletes2 %>% filter(medal == "Gold"),
+            aes(label = name, y = total - 2), hjust = 1, size = 12) +
+  ylim(-10, 30) +
   coord_flip() +
-  labs(x = NULL, y = NULL) +
-  geom_point(data = athletes1 %>% filter(medal == "Gold"), size = 6) +
+  labs(x = NULL, y = NULL,
+       title = "Top 10 <b style='color:#009C3B;'>Brazilian</b> athletes at the Paralympic Swimming",
+       subtitle = "**Daniel Dias** is the most decorated paralympian with **24** medals",
+       caption = "**Source:** International Paralympic Committee | **Figure:** @maxwelco") +
+  geom_point(data =  athletes2 %>% filter(medal == "Gold"), 
+             size = 7, aes(y = total + 2), color = "Gold") +
+  geom_text(data =  athletes2 %>% filter(medal == "Gold"), 
+             size = 10, aes(y = total + 2, label = n)) +
+  geom_point(data =  athletes2 %>% filter(medal == "Silver"), 
+             size = 7, aes(y = total + 3.5), color = "#d6d6d6") +
+  geom_text(data =  athletes2 %>% filter(medal == "Silver"), 
+             size = 10, aes(y = total + 3.5, label = n)) +
+  geom_point(data =  athletes2 %>% filter(medal == "Bronze"), 
+             size = 7, aes(y = total + 5), color = "#cd7f32") +
+  geom_text(data =  athletes2 %>% filter(medal == "Bronze"), 
+             size = 10, aes(y = total + 5, label = n)) +
   geom_emoji(emoji = "1f3ca") +
-  scale_fill_manual(values = c("#cd7f32", "#d6d6d6", "Gold")) +
-#  theme_void() +
+  theme_few(base_family = "oswald", base_size = 30) +
   theme(panel.background = element_rect(fill = "#b8e9ee"),
         plot.background = element_rect(fill = "gray90"),
-        strip.text = element_markdown(size = 15),
-        legend.position = "none") 
+        legend.position = "none",
+        plot.title = element_markdown(family = "limelight", 
+                                      size = 45, hjust = 0.5),
+        plot.subtitle = element_markdown(size = 30, hjust = 0.5),
+        plot.caption = element_markdown(size = 20, family = "inconsolata", 
+                                        color = "gray10"),
+        plot.title.position = "plot",
+        axis.title.y = element_markdown(),
+        axis.title.x = element_markdown(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank()) 
+
+ggsave("fig.png", height = 5)
 ```
 
 
