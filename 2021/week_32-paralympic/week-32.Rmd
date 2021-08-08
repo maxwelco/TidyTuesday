@@ -46,7 +46,8 @@ athletes1 %>%
   mutate(last = str_extract(athlete, '([:upper:]|[:space:]){2,}')) %>% 
   mutate(last = str_replace(last, "\\s[^ ]+$", "")) %>% 
   mutate(last = str_to_title(last)) %>% 
-  unite("name", c("first", "last"), sep = " ") -> athletes2
+  unite("name", c("first", "last"), sep = " ") %>% 
+  mutate(athlete = )-> athletes2
 ```
 
 

@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 32 - Paralympics
+
+![Paralympic medals](2021/week_32-paralympic/fig.png)
+
 ### Week 31 - Olympics
 
 ![Latin America Olympics medals](2021/week_31-olympics/fig.png)
