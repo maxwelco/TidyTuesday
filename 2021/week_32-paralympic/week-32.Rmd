@@ -5,10 +5,6 @@ date: "8/2/2021"
 output: html_document
 ---
 
-```{r}
-devtools::install_github("dill/emoGG", force = TRUE)
-```
-
 
 ```{r}
 library(tidyverse)
@@ -110,7 +106,7 @@ athletes2 %>%
         axis.title.y = element_markdown(),
         axis.title.x = element_markdown(),
         axis.ticks = element_blank(),
-        axis.text = element_blank()) 
+        axis.text = element_blank()) -> fig1
 
 ggsave("fig.png",  height = 5)
 ```
