@@ -5,6 +5,10 @@ date: "8/2/2021"
 output: html_document
 ---
 
+```{r}
+devtools::install_github("dill/emoGG", force = TRUE)
+```
+
 
 ```{r}
 library(tidyverse)
@@ -47,8 +51,11 @@ athletes1 %>%
   mutate(last = str_replace(last, "\\s[^ ]+$", "")) %>% 
   mutate(last = str_to_title(last)) %>% 
   unite("name", c("first", "last"), sep = " ") %>% 
-  mutate(athlete = )-> athletes2
+  mutate(name = case_when(
+    athlete == "DE LIMA Adriano Gomes" ~ "Adriano Gomes De Lima",
+    TRUE ~ name)) -> athletes2
 ```
+
 
 
 ```{r}
@@ -62,14 +69,16 @@ font_add_google("Oswald", "oswald")
 ```
 
 
+
+
+
 ```{r}
- athletes2 %>% 
-  ggplot(aes(x = Rank, y = total, 
-             fill = medal)) +
+athletes2 %>% 
+  ggplot(aes(x = Rank, y = total, label = total)) +
   scale_x_reverse() + 
   geom_text(data =  athletes2 %>% filter(medal == "Gold"),
             aes(label = name, y = total - 2), hjust = 1, size = 12) +
-  ylim(-10, 30) +
+  ylim(-7, 30) +
   coord_flip() +
   labs(x = NULL, y = NULL,
        title = "Top 10 <b style='color:#009C3B;'>Brazilian</b> athletes at the Paralympic Swimming",
@@ -87,8 +96,8 @@ font_add_google("Oswald", "oswald")
              size = 7, aes(y = total + 5), color = "#cd7f32") +
   geom_text(data =  athletes2 %>% filter(medal == "Bronze"), 
              size = 10, aes(y = total + 5, label = n)) +
-  geom_emoji(emoji = "1f3ca") +
   theme_few(base_family = "oswald", base_size = 30) +
+  geom_emoji(emoji = "1f3ca") +
   theme(panel.background = element_rect(fill = "#b8e9ee"),
         plot.background = element_rect(fill = "gray90"),
         legend.position = "none",
@@ -103,8 +112,9 @@ font_add_google("Oswald", "oswald")
         axis.ticks = element_blank(),
         axis.text = element_blank()) 
 
-ggsave("fig.png", height = 5)
+ggsave("fig.png",  height = 5)
 ```
+
 
 
 
