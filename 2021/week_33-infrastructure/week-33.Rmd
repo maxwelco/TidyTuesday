@@ -1,0 +1,63 @@
+---
+title: "week-33"
+author: "Maxwel Coura Oliveira"
+date: "8/10/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggecho)
+library(hrbrthemes)
+hrbrthemes::import_roboto_condensed()
+```
+
+
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 33)
+
+investment <- tuesdata$investment
+chain <- tuesdata$chain_investment
+ipd <- tuesdata$ipd
+```
+
+
+
+```{r}
+investment %>% 
+  group_by(meta_cat, year) %>% 
+  summarise(gross_inv = sum(gross_inv)) %>% 
+  filter(year == min(year) | year == max(year)) %>% 
+  ggplot(aes(x = year, y = gross_inv, color = meta_cat)) +
+  geom_point(stat = "echo") 
+```
+
+```{r}
+library(showtext)
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Roboto", "roboto")
+```
+
+
+
+```{r message = FALSE, warning = FALSE}
+options(scipen = 999)
+investment %>% 
+  filter(meta_cat == "Water supply") %>% 
+  ggplot(aes(x = year, y = gross_inv, color = category)) +
+  geom_line() +
+  facet_wrap(~ meta_cat, scales = "free") +
+  theme_ft_rc()
+```
+
+
+```{r}
+chain  %>% 
+  distinct(category, meta_cat)
+ipd
+```
+
