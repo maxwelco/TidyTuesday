@@ -96,7 +96,7 @@ ggsave("fig.png")
 
 ```{r}
 fig1 +
-    annotate("text", lineheight = .3, label = "There are eight categories of investments in basic infrastructure. Two \nclusters with four categories each have evolved since 1960. Since that,\n the gap between them has steadily increased",
+    annotate("text", lineheight = .3, label = "There are eight categories of investments in basic infrastructure. Two \nclusters with four categories each have evolved since 1960.",
                 x = 1947, y = 155000, size = 10, hjust = 0) +
     annotate("text", lineheight = .3, label = "Values in million of USD",
                 x = 1947, y = 85000, size = 7, hjust = 0, color = "gray80") 
