@@ -20,8 +20,6 @@ library(hrbrthemes)
 tuesdata <- tidytuesdayR::tt_load(2021, week = 33)
 
 investment <- tuesdata$investment
-chain <- tuesdata$chain_investment
-ipd <- tuesdata$ipd
 ```
 
 
@@ -38,9 +36,6 @@ font_add_google("Staatliches", "staatliches")
 ```
 
 
-data = investment %>% 
-                  filter(meta_cat == "Total basic infrastructure") %>% 
-                  filter(max(year))
 ```{r message = FALSE, warning = FALSE}
 options(scipen = 999)
 investment %>% 
@@ -62,7 +57,7 @@ investment1 %>%
     mapping = aes(color = category, label = category),
     family = "lato",
     fontface = "bold",
-    size = 8,
+    size = 8.5,
     direction = "y",
     xlim = c(2022, NA),
     hjust = -1,
@@ -96,13 +91,12 @@ ggsave("fig.png")
 
 ```{r}
 fig1 +
-    annotate("text", lineheight = .3, label = "There are eight categories of investments in basic infrastructure. Two \nclusters with four categories each have evolved since 1960.",
+    annotate("text", lineheight = .3, color = "#E18A07",
+             label = "There are eight categories of investments in basic infrastructure. Two \nclusters with four categories each have evolved since 1960.",
                 x = 1947, y = 155000, size = 10, hjust = 0) +
     annotate("text", lineheight = .3, label = "Values in million of USD",
                 x = 1947, y = 85000, size = 7, hjust = 0, color = "gray80") 
-#    geom_richtext(label = "There are eight categories of investments in basic infrastructure. Two \nclusters with four categories each have evolved since 1960. Since that,\n the gap between them has steadily increased", 
-#                lineheight = .3,
-#                x = 1947, y = 155000, size = 10, hjust = 0) +
+
 ggsave("fig.png")
 ```
 
