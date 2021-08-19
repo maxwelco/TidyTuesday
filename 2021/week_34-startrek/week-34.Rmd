@@ -1,0 +1,66 @@
+---
+title: "week-34"
+author: "Maxwel Coura Oliveira"
+date: "8/19/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+
+```{r}
+computer <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-17/computer.csv')
+```
+
+```{r}
+computer %>% count(char_type, pri_type)
+```
+
+
+```{r include=FALSE}
+library(tidyverse)
+library(tidytext)
+library(tidytext)
+```
+
+
+```{r}
+computer %>%
+  unnest_tokens(words, interaction) %>% 
+  rename(word = words) -> word_computer
+```
+
+
+```{r}
+word_computer %>%
+  inner_join(get_sentiments(lexicon = "bing"))  %>%
+  count(char_type, word, sentiment) -> word_computer1
+```
+```{r}
+word_computer1 %>%
+  group_by(char_type) %>%
+  # find the total number of words in each play
+  mutate(total = sum(n),
+         percent = n / total) -> word_computer2
+```
+
+
+```{r}
+top_words <- word_computer2 %>%
+  # group by sentiment
+  group_by(sentiment) %>%
+  slice_max(n, n = 20) %>%
+  ungroup() %>%
+  mutate(word = reorder(word, n))
+
+ggplot(top_words, aes(x = word, y = n, fill = sentiment)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(char_type ~ sentiment, scales = "free") +
+  coord_flip()
+
+ggsave("fig.png")
+```
+
