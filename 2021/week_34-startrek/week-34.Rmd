@@ -5,25 +5,19 @@ date: "8/19/2021"
 output: html_document
 ---
 
-```{r}
-library(tidyverse)
-```
-
 
 
 ```{r}
 computer <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-17/computer.csv')
 ```
 
-```{r}
-computer %>% count(char_type, pri_type)
-```
 
 
 ```{r include=FALSE}
 library(tidyverse)
 library(tidytext)
-library(tidytext)
+library(vapoRwave)
+library(ggtext)
 ```
 
 
@@ -37,11 +31,11 @@ computer %>%
 ```{r}
 word_computer %>%
   inner_join(get_sentiments(lexicon = "bing"))  %>%
-  count(char_type, word, sentiment) -> word_computer1
+  count(word, sentiment) -> word_computer1
 ```
 ```{r}
 word_computer1 %>%
-  group_by(char_type) %>%
+#  group_by(char_type) %>%
   # find the total number of words in each play
   mutate(total = sum(n),
          percent = n / total) -> word_computer2
@@ -52,14 +46,41 @@ word_computer1 %>%
 top_words <- word_computer2 %>%
   # group by sentiment
   group_by(sentiment) %>%
-  slice_max(n, n = 20) %>%
+  slice_max(n, n = 10) %>%
   ungroup() %>%
-  mutate(word = reorder(word, n))
+  mutate(word = reorder(word, n)) -> word_computer3
+```
 
+```{r}
+library(showtext)
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Rambla", "rambla")
+font_add_google("Audiowide", "audiowide")
+font_add_google("Boogaloo", "boogaloo")
+font_add_google("Carter One", "carter")
+```
+
+
+```{r message = FALSE}
 ggplot(top_words, aes(x = word, y = n, fill = sentiment)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(char_type ~ sentiment, scales = "free") +
-  coord_flip()
+  facet_wrap(~ sentiment, scales = "free") +
+  coord_flip() +
+  labs(title = "Star Trek gets sentimental",
+       subtitle = "Top 10 negative and positive words from person and computer speech interaction",
+       caption = "**Source:** SpeechInteraction.org | **Figure:** @maxwelco",
+       x = NULL, y = NULL) +
+  new_retro(font = "rambla") +
+  scale_fill_newRetro() +
+  theme(axis.text = element_markdown(size = 30, family = "boogaloo"),
+        strip.text = element_markdown(size = 35, 
+                                      face = "bold",
+                                      family = "carter"),
+        plot.title = element_markdown(size = 50, family = "audiowide"),
+        plot.subtitle = element_markdown(size = 25),
+        plot.caption = element_markdown(size = 15))
 
 ggsave("fig.png")
 ```
