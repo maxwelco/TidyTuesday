@@ -7,7 +7,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ### Week 34 - Star Trek
 
-![Star Trek figure](2021/week_33-startrek/fig.png)
+![Star Trek figure](2021/week_34-startrek/fig.png)
 
 ### Week 33 - Infrastructure investments
 
