@@ -28,7 +28,7 @@ lemurs %>%
                                    "Adult" = "adult",
                                    "Young \nadult" = "young_adult"),
          age_category = fct_relevel(age_category, 
-                                    levels = c("Adult", "Young adult", "Juvenile")),
+                                    levels = c("Adult", "Young \nadult", "Juvenile")),
          birth_type = fct_recode(birth_type, 
                                  "Captive \nborn" = "CB",
                                  "Wild born" = "WB")) %>% 

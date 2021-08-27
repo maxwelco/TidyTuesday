@@ -7,7 +7,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ### Week 35 - Lemurs
 
-![Star Trek figure](2021/week_35-lemurs/fig.png)
+![Lemurs tidy tuesday figure](2021/week_35-lemurs/fig.png)
 
 ### Week 34 - Star Trek
 
