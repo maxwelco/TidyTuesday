@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 35 - Lemurs
+
+![Star Trek figure](2021/week_35-lemurs/fig.png)
+
 ### Week 34 - Star Trek
 
 ![Star Trek figure](2021/week_34-startrek/fig.png)

@@ -29,7 +29,6 @@ investment <- tuesdata$investment
 ```{r}
 library(showtext)
 library(extrafont)
-library(showtext)
 showtext_auto()
 font_add_google("Lato", "lato")
 font_add_google("Staatliches", "staatliches")

@@ -1,0 +1,106 @@
+---
+title: "week-35"
+author: "Maxwel Coura Oliveira"
+date: "8/26/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggtext)
+library(ggthemes)
+library(ggalluvial)
+```
+
+
+```{r}
+lemurs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-24/lemur_data.csv')
+```
+```{r}
+lemurs %>% 
+  filter(sex %in% c("M", "F"),
+         birth_type != "Unk") %>% 
+  mutate(sex = fct_recode(sex, 
+                          "Male" = "M",
+                          "Female" = "F"),
+         age_category = fct_recode(age_category,
+                                   "Juvenile" = "IJ",
+                                   "Adult" = "adult",
+                                   "Young \nadult" = "young_adult"),
+         age_category = fct_relevel(age_category, 
+                                    levels = c("Adult", "Young adult", "Juvenile")),
+         birth_type = fct_recode(birth_type, 
+                                 "Captive \nborn" = "CB",
+                                 "Wild born" = "WB")) %>% 
+  count(dlc_id, taxon, sex, birth_type, age_category, hybrid, birth_institution) -> lemurs1
+```
+
+```{r}
+lemurs %>% 
+  filter(hybrid == "Sp") %>% 
+  count(dlc_id, taxon, sex, birth_type, age_category, hybrid, birth_institution) %>% 
+  distinct(birth_institution)
+```
+
+```{r}
+lemurs1 %>% 
+  mutate(birth_institution = case_when(
+    birth_institution == "Duke Lemur Center" ~ "Duke \nLemur \nCenter",
+    TRUE ~ "Other"
+  )) -> lemurs2
+```
+
+
+```{r}
+library(showtext)
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Chicle", "chicle")
+font_add_google("Poppins", "poppins")
+font_add_google("Lato", "lato")
+```
+
+
+```{r}
+theme_style <- theme(legend.position = "none",
+        plot.title = element_markdown(size = 90, face = "bold", 
+                                      hjust = 0.5, color = "#333333",
+                                      family = "chicle"),
+        plot.subtitle = element_markdown(size = 50, hjust = 0.5, margin=margin(0,0,-10,0),
+                                         color = "#333333", family = "lato", lineheight = 0.3),
+        plot.caption = element_markdown(hjust = 0.5, size = 30, family = "lato",
+                                        margin=margin(-10,0,0,0)),
+        plot.title.position = "plot",
+        plot.margin = unit(c(0,-3,0,-3), "cm"))
+
+theme_set(theme_void() + theme_style)
+```
+
+
+
+```{r}
+ggplot(data = lemurs2,
+       aes(axis1 = sex, axis2 = age_category, 
+           axis3 = birth_type, axis4 = birth_institution,
+           y = n)) +
+  scale_x_discrete(limits = c("Sex", "age_category", "birth_type", "birth_institution"), 
+                   expand = c(.2, .05)) +
+  labs(title = "Where are the lemurs <b style='color:#ff9900;'>hybrids</b>?",
+       subtitle = "The <b style='color:#ff9900;'>hybrids</b>, *Eulemur Eulemur* and *Varecia Varecia* are the minority among <b style='color:#1D1D1D;'>non-hybrid</b> lemurs. <br>All hybrids were born in captivity and most of them are located at Duke Lemur Center",
+       caption = "**Source:** Kaggle | **Figure:** @maxwelco") +
+  geom_alluvium(aes(fill = hybrid)) +
+  geom_stratum(fill = "#F9F6EE") +
+  geom_text(stat = "stratum", aes(label = after_stat(stratum)),
+            size = 15, lineheight = 0.3, fontface = "bold", family = "poppins") +
+  scale_fill_manual(values = c("#1D1D1D", "#ff9900"))
+
+
+ggsave("fig.png", bg = "white", width = 12, height = 8)
+```
+
+
+
+
+
+
