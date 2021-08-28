@@ -87,7 +87,7 @@ ggplot(data = lemurs2,
   scale_x_discrete(limits = c("Sex", "age_category", "birth_type", "birth_institution"), 
                    expand = c(.2, .05)) +
   labs(title = "Where are the lemurs <b style='color:#ff9900;'>hybrids</b>?",
-       subtitle = "The <b style='color:#ff9900;'>hybrids</b>, *Eulemur Eulemur* and *Varecia Varecia* are the minority among <b style='color:#1D1D1D;'>non-hybrid</b> lemurs. <br>All hybrids were born in captivity and most of them are located at Duke Lemur Center",
+       subtitle = "The <b style='color:#ff9900;'>hybrids</b>, *Eulemur Eulemur* and *Varecia Varecia* are the minority among lemurs. <br>All hybrids were born in captivity and most of them are located at Duke Lemur Center",
        caption = "**Source:** Kaggle | **Figure:** @maxwelco") +
   geom_alluvium(aes(fill = hybrid)) +
   geom_stratum(fill = "#F9F6EE") +
