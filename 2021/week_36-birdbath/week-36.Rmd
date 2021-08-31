@@ -9,6 +9,7 @@ output: html_document
 library(tidyverse)
 library(ggupset)
 library(ggthemes)
+library(ggtext)
 ```
 
 
@@ -16,35 +17,115 @@ library(ggthemes)
 bird_baths <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-31/bird_baths.csv')
 ```
 
+
+
+
+
 ```{r}
-bird_baths %>% 
-  ungroup() %>% 
-  mutate(bird_type = as.list(bird_type))
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Lato", "lato")
+font_add_google("Staatliches", "staatliches")
 ```
 
 
 ```{r}
 bird_baths %>%
   group_by(bird_type) %>% 
-  summarise(sum_bird = sum(bird_count)) %>% 
-  filter(sum_bird > 100) %>% 
-  ggplot(aes(x = fct_reorder(bird_type, sum_bird), y = sum_bird)) +
-  geom_bar(stat = "identity", fill = "#333333") +
-  coord_flip() +
-  labs(x = NULL, y = NULL,
-       caption = "Source: Cleary et al, 2016 | Figure: @maxwelco") +
-  geom_text(aes(label = sum_bird), nudge_y = -25, color = "white") + 
-  theme_excel_new() +
-  theme(axis.text.x = element_blank())
+  summarise(sum_bird = sum(bird_count)) %>%
+  mutate(variable = case_when(
+    bird_type == "Noisy Miner" ~ "Noisy Miner",
+    bird_type == "Australian Magpie" ~ "Australian Magpie",
+    bird_type == "Rainbow Lorikeet" ~ "Rainbow Lorikeet",
+    TRUE ~ "other"
+  )) %>% 
+  filter(sum_bird > 100) -> bird_baths1
+```
 
-ggsave("fig.png", height = 10)
+
+```{r}
+bird_baths1 %>% 
+ggplot(aes(x = fct_reorder(bird_type, sum_bird), 
+             y = sum_bird, 
+             fill = variable)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("black", "gray70", "#bbc9e5", "#FF8300")) +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  geom_text(aes(label = sum_bird), 
+            nudge_y = -35, 
+            color = "white", 
+            size = 16) + 
+  theme_void(base_family = "lato") +
+  theme(legend.position = "none",
+        axis.text.x = element_blank(),
+        axis.text = element_markdown(size = 35)) -> figa
+
+ggsave("fig.png", bg = "white", height = 10)
 ```
 
 ```{r}
-tidy_movies %>%
-  distinct(title, year, length, .keep_all=TRUE) %>%
-  ggplot(aes(x=Genres)) +
-    geom_bar() +
-    scale_x_upset(n_intersections = 20)
+library(png)
+library(ggpubr)
+# Import the image
+img1 <- png::readPNG("noisy_miner.png")
+
+# Plot with background image
+ggplot(mapping = aes(x = 1:10, y = 1:10)) +
+  theme_void() +
+  ylim(1,10) + xlim(1,10) +
+  background_image(img1) +
+  annotate("text", x = 1, y = 1, label = "Image: SJ Allen", 
+           hjust = 0, size = 5, family = "lato") +
+  annotate("text", x = 9.5, y = 9.5, label = "Noisy Miner", 
+           hjust = 1, size = 12, family = "lato") -> figb
 ```
+
+
+```{r}
+img2 <- png::readPNG("magpie.png")
+#
+# Plot with background image
+ggplot() +
+  theme_void() +
+  ylim(1,10) + xlim(1,10) +
+  background_image(img2) +
+  annotate("text", x = 1, y = 1, label = "Image: Wikipedia", 
+           hjust = 0, size = 5, family = "lato") +
+  annotate("text", x = 9.5, y = 9.5, label = "Australian Magpie", 
+           hjust = 1, size = 12, family = "lato") -> figc
+```
+
+
+```{r}
+img3 <- png::readPNG("lorichetto.png")
+#
+# Plot with background image
+ggplot() +
+  theme_void() +
+  ylim(1,10) + xlim(1,10) +
+  background_image(img3) +
+  annotate("text", x = 1, y = 1, label = "Image: Birds wiki", 
+           hjust = 0, size = 5, family = "lato") +
+  annotate("text", x = 9.5, y = 9.5, label = "Rainbow Lorikeet", 
+           hjust = 1, size = 12, family = "lato")  -> figd
+```
+
+
+```{r warning=FALSE}
+#library(patchwork)
+figa + (figb / figc / figd) +
+  plot_annotation(
+  title = "Most common birds in Australia <img src='http://luizricardo.org/wordpress/wp-content/upload-files/2015/10/AustralianFlag-1024x845.jpg' width='25'/>",
+  subtitle = "A survey showed that Noisy Miner, Australian Magpie and Rainbow Lorikeet are the top 3 birds",
+  caption = "**Source:** Cleary et al, 2016 | **Figure:** @maxwelco") & 
+  theme(plot.title = element_markdown(size = 75, family = "staatliches", hjust = 0.5),
+        plot.subtitle = element_markdown(size = 45, hjust = 0.5),
+        plot.title.position = "plot",
+        plot.caption = element_markdown(size = 25, hjust = 0.5))
+
+ggsave("fig.png", height = 10, width = 9)
+```
+
 
