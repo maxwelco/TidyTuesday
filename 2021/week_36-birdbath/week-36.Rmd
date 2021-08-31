@@ -1,0 +1,50 @@
+---
+title: "week-36"
+author: "Maxwel Coura Oliveira"
+date: "8/31/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggupset)
+library(ggthemes)
+```
+
+
+```{r}
+bird_baths <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-08-31/bird_baths.csv')
+```
+
+```{r}
+bird_baths %>% 
+  ungroup() %>% 
+  mutate(bird_type = as.list(bird_type))
+```
+
+
+```{r}
+bird_baths %>%
+  group_by(bird_type) %>% 
+  summarise(sum_bird = sum(bird_count)) %>% 
+  filter(sum_bird > 100) %>% 
+  ggplot(aes(x = fct_reorder(bird_type, sum_bird), y = sum_bird)) +
+  geom_bar(stat = "identity", fill = "#333333") +
+  coord_flip() +
+  labs(x = NULL, y = NULL,
+       caption = "Source: Cleary et al, 2016 | Figure: @maxwelco") +
+  geom_text(aes(label = sum_bird), nudge_y = -25, color = "white") + 
+  theme_excel_new() +
+  theme(axis.text.x = element_blank())
+
+ggsave("fig.png", height = 10)
+```
+
+```{r}
+tidy_movies %>%
+  distinct(title, year, length, .keep_all=TRUE) %>%
+  ggplot(aes(x=Genres)) +
+    geom_bar() +
+    scale_x_upset(n_intersections = 20)
+```
+
