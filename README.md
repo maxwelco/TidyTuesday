@@ -7,7 +7,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ### Week 36 - Birds
 
-![Birds in Australia tidy tuesday figure](2021/week_35-birdbath/fig.png)
+![Birds in Australia tidy tuesday figure](2021/week_36-birdbath/fig.png)
 
 ### Week 35 - Lemurs
 
