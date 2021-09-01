@@ -61,17 +61,15 @@ ggplot(aes(x = fct_reorder(bird_type, sum_bird),
   theme(legend.position = "none",
         axis.text.x = element_blank(),
         axis.text = element_markdown(size = 35)) -> figa
-
-ggsave("fig.png", bg = "white", height = 10)
 ```
 
 ```{r}
 library(png)
 library(ggpubr)
-# Import the image
+
 img1 <- png::readPNG("noisy_miner.png")
 
-# Plot with background image
+
 ggplot(mapping = aes(x = 1:10, y = 1:10)) +
   theme_void() +
   ylim(1,10) + xlim(1,10) +
@@ -85,8 +83,8 @@ ggplot(mapping = aes(x = 1:10, y = 1:10)) +
 
 ```{r}
 img2 <- png::readPNG("magpie.png")
-#
-# Plot with background image
+
+
 ggplot() +
   theme_void() +
   ylim(1,10) + xlim(1,10) +
@@ -100,8 +98,8 @@ ggplot() +
 
 ```{r}
 img3 <- png::readPNG("lorichetto.png")
-#
-# Plot with background image
+
+
 ggplot() +
   theme_void() +
   ylim(1,10) + xlim(1,10) +
