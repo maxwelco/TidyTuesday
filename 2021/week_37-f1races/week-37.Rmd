@@ -24,11 +24,45 @@ races <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidy
 results <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-09-07/results.csv')
 seasons <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-09-07/seasons.csv')
 status <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-09-07/status.csv')
-
 ```
+
+
+```{r}
+races %>% 
+  dplyr::select(-time, -url) -> races1
+
+circuits %>% 
+  dplyr::select(-url) %>% 
+  rename(circuit_name = name) -> circuits1
+```
+
+
+
 
 ```{r}
 drivers %>% 
-  left_join(driver_standings, by = "driverId")
+  dplyr::select(-number, -url) %>% 
+  left_join(results, by = "driverId") %>% 
+  left_join(races1, by = "raceId") %>% 
+  left_join(status, by = "statusId") %>% 
+  left_join(circuits1, by = "circuitId")
+```
+
+
+```{r}
+filter(driverRef == "senna") %>% 
+  ggplot(aes(x = grid, y = positionOrder)) +
+  geom_jitter() +
+  geom_smooth(method = "lm")
+```
+
+
+```{r}
+drivers %>% 
+  left_join(driver_standings, by = "driverId") %>%
+  left_join(results, by = c("driverId"))
+  filter(nationality == "Brazilian") %>% 
+  count(driverRef, positionText) %>% 
+  filter(positionText == "1")
 ```
 
