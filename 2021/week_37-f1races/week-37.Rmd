@@ -7,6 +7,10 @@ output: html_document
 
 ```{r}
 library(tidyverse)
+library(png)
+library(ggpubr)
+library(ggtext)
+library(ggthemes)
 ```
 
 
@@ -45,24 +49,193 @@ drivers %>%
   left_join(results, by = "driverId") %>% 
   left_join(races1, by = "raceId") %>% 
   left_join(status, by = "statusId") %>% 
-  left_join(circuits1, by = "circuitId")
+  left_join(circuits1, by = "circuitId") %>% 
+  dplyr::select(-driverId, -code, -resultId, -raceId, -constructorId, -statusId, -circuitId) -> data
 ```
 
 
 ```{r}
-filter(driverRef == "senna") %>% 
-  ggplot(aes(x = grid, y = positionOrder)) +
-  geom_jitter() +
-  geom_smooth(method = "lm")
+# victories
+data %>% 
+  filter(positionOrder == 1) %>% 
+  count(driverRef) %>% 
+  filter(driverRef %in% c("senna", "prost", "mansell", "piquet")) %>% 
+  arrange(desc(n))
+```
+
+
+
+```{r}
+# entries
+data %>% 
+#  filter(positionOrder == 1) %>% 
+  count(driverRef) %>% 
+  filter(driverRef %in% c("senna", "prost", "mansell", "piquet")) %>% 
+  arrange(desc(n))
 ```
 
 
 ```{r}
-drivers %>% 
-  left_join(driver_standings, by = "driverId") %>%
-  left_join(results, by = c("driverId"))
-  filter(nationality == "Brazilian") %>% 
-  count(driverRef, positionText) %>% 
-  filter(positionText == "1")
+# pole positions
+data %>% 
+  filter(grid == 1) %>% 
+  count(driverRef) %>% 
+  filter(driverRef %in% c("senna", "prost", "mansell", "piquet")) %>% 
+  arrange(desc(n))
 ```
+
+
+```{r}
+# podium
+data %>% 
+  filter(positionOrder %in% c(1,2,3)) %>% 
+  count(driverRef) %>% 
+  filter(driverRef %in% c("senna", "prost", "mansell", "piquet")) %>% 
+  arrange(desc(n))
+```
+
+
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Dancing Script", "dancing")
+font_add_google("McLaren", "mclaren")
+```
+
+
+
+```{r}
+img <- readPNG("best.png")
+trophy <- readPNG("trophy.png")
+```
+
+
+```{r}
+ggplot() +
+  theme_void() +
+  ylim(0,10) + xlim(0,10) +
+  background_image(img) +
+  annotate("text", x = 1.1, y = 10, label = "Ayrton Senna", 
+           hjust = 0.5, size = 25, color = "#FEDE00", family = "dancing") +
+  annotate("text", x = 2.8, y = 10, color = "#ff0000", label = "Alain Prost", 
+           hjust = 0, size = 25, family = "dancing") + 
+  annotate("text", x = 5.3, y = 10, color = "#004EFF", label = "Nigel Mansell", 
+           hjust = 0, size = 25, family = "dancing") +
+  annotate("text", x = 7.9, y = 10, label = "Nelson Piquet", 
+           hjust = 0, size = 25, color = "#10ff00", family = "dancing") -> fig1
+
+#ggsave("fig.png")
+```
+
+
+```{r}
+library(ggimg)
+```
+
+
+```{r}
+# senna
+fig1 + 
+  annotate("text", x = 0, y = 9.4, label = "162 grand prix", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 0, y = 8.9, label = "65 pole positions", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 0, y = 8.4, label = "41 victories", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 0, y = 7.9, label = "80 podiums", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 1.6, y = 9, label = "3", 
+           hjust = 0, size = 50, color = "#F3E5AB", family = "mclaren") +
+  annotate("text", x = 2.15, y = 8.35, label = "championships", 
+           hjust = 0, size = 8, angle = 90, color = "#F3E5AB", family = "dancing") -> fig2
+
+#ggsave("fig.png")
+```
+
+
+```{r}
+# prost
+fig2 + 
+  annotate("text", x = 2.9, y = 9.4, label = "202 grand prix", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 2.9, y = 8.9, label = "33 pole positions", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 2.9, y = 8.4, label = "51 victories", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 2.9, y = 7.9, label = "106 podiums", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 4.5, y = 9, label = "4", 
+           hjust = 0, size = 50, color = "#F3E5AB", family = "mclaren") +
+  annotate("text", x = 5.1, y = 8.35, label = "championships", 
+           hjust = 0, size = 8, angle = 90, color = "#F3E5AB", family = "dancing") -> fig3
+
+#ggsave("fig.png")
+```
+
+
+```{r}
+# mansell
+fig3 +
+  annotate("text", x = 5.5, y = 9.4, label = "192 grand prix", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 5.5, y = 8.9, label = "32 pole positions", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 5.5, y = 8.4, label = "31 victories", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 5.5, y = 7.9, label = "59 podiums", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 7.1, y = 9, label = "1", 
+           hjust = 0, size = 50, color = "#F3E5AB", family = "mclaren") +
+  annotate("text", x = 7.5, y = 8.35, label = "championship", 
+           hjust = 0, size = 8, angle = 90, color = "#F3E5AB", family = "dancing") -> fig4
+
+#ggsave("fig.png")
+```
+
+
+```{r}
+# piquet
+fig4 +
+  annotate("text", x = 8.0, y = 9.4, label = "207 grand prix", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 8, y = 8.9, label = "24 pole positions", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 8, y = 8.4, label = "23 victories", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 8, y = 7.9, label = "60 podiums", 
+           hjust = 0, size = 10, color = "#FFFFF0", family = "mclaren") +
+  annotate("text", x = 9.6, y = 9, label = "3", 
+           hjust = 0, size = 50, color = "#F3E5AB", family = "mclaren") +
+  annotate("text", x = 10, y = 9, label = "championships", 
+           vjust = 1.8, size = 8, angle = 90, 
+           color = "#F3E5AB", family = "dancing") -> fig5
+
+#ggsave("fig.png")
+```
+
+
+```{r}
+fig5 +
+  annotate("text", x = 5, y = 0.0001, 
+           label = "Source: Ergast API | Figure: @maxwelco | Image background: Portugal, 1986 — F1", 
+           hjust = 0.5, size = 9, color = "#FFFDD0", family = "mclaren") +
+  geom_richtext(aes(x = 5, y = 2), label = "<img src='https://seeklogo.com/images/F/formula-1-world-championship-logo-1C8F499CD3-seeklogo.com.png' width='100'/>", 
+           hjust = 0.5, size = 30, color = NA, fill = NA) +
+  annotate("text", x = 4.9, y = 3.6, 
+           label = "The Golden Era", 
+           hjust = 0.5, size = 10, color = "gold", family = "mclaren")
+
+ggsave("fig.png")
+```
+
+
+
+
+
+
+
+
+
 
