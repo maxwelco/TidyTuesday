@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 36 - F1 races
+
+![F1 race figure](2021/week_37-f1races/fig.png)
+
 ### Week 36 - Birds
 
 ![Birds in Australia tidy tuesday figure](2021/week_36-birdbath/fig.png)
