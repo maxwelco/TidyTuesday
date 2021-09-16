@@ -5,7 +5,11 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
-### Week 36 - F1 races
+### Week 38 - Billboard
+
+![rock n' roll figure](2021/week_38-billboard/fig.png)
+
+### Week 37 - F1 races
 
 ![F1 race figure](2021/week_37-f1races/fig.png)
 
