@@ -5,3 +5,142 @@ date: "9/14/2021"
 output: html_document
 ---
 
+```{r}
+library(tidyverse)
+library(ggtext)
+```
+
+
+```{r}
+tuesdata <- tidytuesdayR::tt_load(2021, week = 38)
+```
+
+
+```{r}
+billboard <- tuesdata$billboard
+audio <- tuesdata$audio_features
+```
+
+
+```{r}
+billboard %>% 
+  left_join(audio, by = c("song", "performer", "song_id")) %>% 
+  mutate(week_id = lubridate::mdy(week_id)) -> billboard1
+```
+
+
+```{r}
+billboard1 %>% 
+  arrange(week_id) %>% 
+  mutate(rock = case_when(
+    str_detect(spotify_genre, "rock-and-roll") ~ "Rock-and-Roll",
+#    str_detect(spotify_genre, "rock") ~ "other rock",
+    TRUE ~ "Other genres"
+  )) -> billboard2
+```
+
+
+```{r}
+billboard2 %>% 
+  mutate(year = lubridate::year(week_id)) -> billboard3
+```
+
+```{r}
+billboard3 %>% 
+  count(year, rock) -> billboard4
+```
+
+```{r}
+billboard4 %>% 
+  filter(year == 1960)
+```
+
+
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("RocknRoll One", "rock")
+font_add_google("Lato", "lato")
+font_add_google("Open Sans", "opens")
+```
+ 
+ 
+```{r}
+billboard4 %>% 
+ggplot(aes(x = year, y = n, fill = rock)) +
+  theme_void() +
+  geom_area(color = NA) +
+  scale_fill_manual(values = c("#faba4b", "#311e64")) +
+  geom_richtext(x = 1958, y = 7000, hjust = 0, family = "rock", 
+                fill = NA, label.color = NA,
+                label = "Long live <b style='color:#311e64;'>Rock n' Roll</b>?", 
+                size = 25) +
+  theme(legend.position = "none",
+        axis.text.x = element_markdown(size = 30)) -> fig1
+```
+
+
+```{r}
+fig1 +
+  geom_curve(x = 1962, y = 2500, xend = 1960, yend = 2000,
+              color = "#311e64",
+               arrow = arrow(length = unit(0.07, "inch")), 
+               size = 0.4, curvature = 0.3) +
+  annotate("text", x = 1967, y = 2500, family = "lato", size = 7,
+           color = "#311e64",
+           label = "Maximum of 37% in 1960") -> fig2
+```
+
+
+```{r}
+fig2 +
+  annotate("text", x = 1990, y = 5100, hjust = 0.5, 
+           family = "lato", color = "#333333", size = 5,
+           label = "The Billboard Hot 100 is the music industry standard record chart in the United States for songs, published weekly by Billboard magazine") -> fig3
+```
+
+
+```{r}
+fig3 +
+  annotate("text", x = 1985, y = 3000, hjust = 0,
+             color = "#FFA500", family = "opens",
+                label = "Other genres",
+                size = 15) -> fig4
+```
+
+```{r}
+fig4 +
+   annotate("text", x = 2022, y = 1500, hjust = 0,
+             color = "gray50", family = "lato",
+                label = "Source: Data.World | Figure: @maxwelco",
+                size = 6, angle = 90) -> fig5
+```
+
+
+```{r}
+fig5 +
+  geom_richtext(x = 1958, y = 6100, hjust = 0, family = "opens", 
+                fill = NA, label.color = NA, lineheight = 0.4,
+                size = 10, 
+                label = "<b style='color:#311e64;'>Rock n' Roll</b> commonly made the top Billboard Hot 100 in the 1950/60s. Its appearance <br>dramatically decreased until the 1990s. <b style='color:#311e64;'>Rock n' Roll</b> barely made the top 100 after 2000") 
+
+ggsave("fig.png", bg = "beige")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
