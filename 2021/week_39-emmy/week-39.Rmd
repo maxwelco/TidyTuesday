@@ -1,0 +1,21 @@
+---
+title: "week-38"
+author: "Maxwel Coura Oliveira"
+date: "9/23/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+nominees <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-09-21/nominees.csv')
+```
+
+```{r}
+nominees |> 
+#  distinct(title)
+  filter(title == "Breaking Bad")
+```
+
