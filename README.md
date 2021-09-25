@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 39 - Emmy Awards
+
+![Emmy Awards' figure](2021/week_39-emmy/fig.png)
+
 ### Week 38 - Billboard
 
 ![rock n' roll figure](2021/week_38-billboard/fig.png)

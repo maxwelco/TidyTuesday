@@ -7,15 +7,71 @@ output: html_document
 
 ```{r}
 library(tidyverse)
+library(ggtext)
+library(scales)
+library(ggthemes)
 ```
 
 ```{r}
 nominees <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-09-21/nominees.csv')
 ```
 
+
 ```{r}
 nominees |> 
-#  distinct(title)
-  filter(title == "Breaking Bad")
+  distinct(distributor) |> 
+  arrange(distributor)
 ```
+
+
+```{r}
+nominees |> 
+  count(distributor, type, year, sort = TRUE) |> 
+#  distinct(distributor) |> 
+  arrange(year) |> 
+  filter(distributor %in% c("Netflix", "Hulu", "HBO Max", 
+                            "Prime Video", "Disney+", "Peacock", 
+                            "Paramount+", "Apple TV+", "Funimation")) -> nominees1
+```
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Limelight", "limelight")
+font_add_google("Ubuntu", "ubuntu")
+```
+
+
+```{r}
+nominees1 |> 
+  ggplot(aes(x = year, y = n, fill = type)) +
+  geom_bar(stat = "identity", color = NA) +
+  facet_wrap(~ distributor, ncol = 4) +
+  theme_dark() +
+  labs(title = "Top on-demand streaming services performance at the <b style='color:2;'>Emmy Awards</b>",
+       subtitle = "Netflix has the most number of <b style='color:black;'>nominees</b> and <b style='color:#E69F00;'>winners</b> each year",
+       x = NULL, y = NULL,
+       caption = "Source: emmys.com | Figure: @maxwelco") +
+  scale_x_continuous(breaks = seq(2013, 2021, 2)) +
+  scale_y_continuous(limits = c(0,600), 
+                     breaks = seq(0, 600, 150)) +
+  scale_fill_colorblind() +
+  theme(strip.text = element_markdown(family = "limelight", 
+                                      size = 40),
+        axis.text = element_markdown(size = 30),
+        plot.title = element_markdown(size = 60, 
+                                      family = "ubuntu", 
+                                      face = "bold"),
+        plot.subtitle = element_markdown(size = 40, family = "ubuntu"),
+        plot.title.position = "plot",
+        plot.caption = element_markdown(size = 20, 
+                                        color = "gray50"),
+        legend.position = "none"
+        )
+
+ggsave("fig.png", width = 9)
+```
+
+
 
