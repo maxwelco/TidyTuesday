@@ -34,6 +34,10 @@ nominees |>
                             "Paramount+", "Apple TV+", "Funimation")) -> nominees1
 ```
 
+
+
+
+
 ```{r}
 library(extrafont)
 library(showtext)
@@ -52,7 +56,7 @@ nominees1 |>
   labs(title = "Top on-demand streaming services performance at the <b style='color:2;'>Emmy Awards</b>",
        subtitle = "Netflix has the most number of <b style='color:black;'>nominees</b> and <b style='color:#E69F00;'>winners</b> each year",
        x = NULL, y = NULL,
-       caption = "Source: emmys.com | Figure: @maxwelco") +
+       caption = "**Source:** emmys.com | **Figure:** @maxwelco") +
   scale_x_continuous(breaks = seq(2013, 2021, 2)) +
   scale_y_continuous(limits = c(0,600), 
                      breaks = seq(0, 600, 150)) +
@@ -66,11 +70,12 @@ nominees1 |>
         plot.subtitle = element_markdown(size = 40, family = "ubuntu"),
         plot.title.position = "plot",
         plot.caption = element_markdown(size = 20, 
-                                        color = "gray50"),
+                                        color = "gray50",
+                                        family = "ubuntu"),
         legend.position = "none"
         )
 
-ggsave("fig.png", width = 9)
+ggsave("fig.png", width = 9, height = 5)
 ```
 
 
