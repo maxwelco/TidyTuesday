@@ -9,7 +9,6 @@ output: html_document
 library(tidyverse)
 library(ggthemes)
 library(ggtext)
-library(patchwork)
 ```
 
 ```{r}
@@ -21,24 +20,20 @@ paper_programs <- readr::read_csv('https://raw.githubusercontent.com/rfordatasci
 
 ```
 
+
+
+
 ```{r}
-programs |> 
-  left_join(paper_programs, by = "program") |> 
+paper_programs |> 
+  left_join(programs, by = "program") |> 
   left_join(papers, by = "paper") |> 
   left_join(paper_authors, by = "paper") |> 
   left_join(authors, by = "author") -> data
 ```
 
-```{r}
-data |> 
-  count(name, program_desc) |> 
-  arrange(desc(n))
-```
-
 
 
 ```{r}
-library(scales)
 data |> 
   mutate(decade = case_when(
     year <= 1980 ~ "1970s",
@@ -69,10 +64,10 @@ data1 %>%
                                                 "Public Economics"), TRUE, FALSE)) |> 
   ggplot(aes(x = decade, y = program_desc, fill = n)) + 
   geom_tile(show.legend = FALSE) +
-  scale_fill_viridis_c(option = "H") +
+  scale_fill_viridis_c(option = "E") +
   theme_minimal() +
   geom_text(aes(label = n), size = 9, family = "moo") +
-  labs(title = "Economic Papers",
+  labs(title = "National Bureau of Economic Research papers",
        subtitle = "Number of working papers by program and decade",
        x = NULL, y = NULL,
        caption = "Source: National Bureau of Economic Research | Figure: @maxwelco") +
@@ -90,7 +85,7 @@ data1 %>%
                                      size = 35, 
                                      color = "#1F3659"),
         plot.caption = element_markdown(family = "courgette", 
-                                        size = 15, 
+                                        size = 15, hjust = -1.25,
                                         color = "#1F3659"),
         panel.grid.major = element_blank())
   
