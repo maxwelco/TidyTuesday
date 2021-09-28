@@ -8,8 +8,9 @@ output: html_document
 ```{r}
 library(tidyverse)
 library(ggthemes)
+library(ggtext)
+library(patchwork)
 ```
-
 
 ```{r}
 papers <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-09-28/papers.csv')
@@ -19,6 +20,7 @@ paper_authors <- readr::read_csv('https://raw.githubusercontent.com/rfordatascie
 paper_programs <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-09-28/paper_programs.csv')
 
 ```
+
 ```{r}
 programs |> 
   left_join(paper_programs, by = "program") |> 
@@ -26,6 +28,14 @@ programs |>
   left_join(paper_authors, by = "paper") |> 
   left_join(authors, by = "author") -> data
 ```
+
+```{r}
+data |> 
+  count(name, program_desc) |> 
+  arrange(desc(n))
+```
+
+
 
 ```{r}
 library(scales)
@@ -42,19 +52,109 @@ data |>
 #  mutate_at(vars(-program_desc, -decade), rescale) -> data1
 ```
 
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Berkshire Swash", "swash")
+font_add_google("Courgette", "courgette")
+font_add_google("Swanky and Moo Moo", "moo")
+```
+
+
+```{r}
+data1 %>%
+  mutate(variable = if_else(program_desc %in% c("Economic Fluctuations and Growth",
+                                                "Labor Studies",
+                                                "Public Economics"), TRUE, FALSE)) |> 
+  ggplot(aes(x = decade, y = program_desc, fill = n)) + 
+  geom_tile(show.legend = FALSE) +
+  scale_fill_viridis_c(option = "H") +
+  theme_minimal() +
+  geom_text(aes(label = n), size = 9, family = "moo") +
+  labs(title = "Economic Papers",
+       subtitle = "Number of working papers by program and decade",
+       x = NULL, y = NULL,
+       caption = "Source: National Bureau of Economic Research | Figure: @maxwelco") +
+  theme(plot.title = element_markdown(family = "swash", 
+                                      size = 65, 
+                                      face = "bold",
+                                      hjust = 0.5, 
+                                      color = "#1F3659"),
+        plot.title.position = "plot",
+        plot.subtitle = element_markdown(family = "courgette", 
+                                         size = 35,
+                                         hjust = 0.5,
+                                         color = "#DC143C"),
+        axis.text = element_markdown(family = "moo", 
+                                     size = 35, 
+                                     color = "#1F3659"),
+        plot.caption = element_markdown(family = "courgette", 
+                                        size = 15, 
+                                        color = "#1F3659"),
+        panel.grid.major = element_blank())
+  
+  ggsave("fig.png", bg = "#CCCC99")
+```
+
+```{r}
+data |> 
+  count(program_desc) |> 
+  mutate(variable = if_else(program_desc %in% c("Economic Fluctuations and Growth",
+                                                "Labor Studies",
+                                                "Public Economics"), "yes", "no")) |> 
+  ggplot(aes(x = program_desc, y = n, fill = variable)) +
+  geom_bar(stat = "identity", color = NA) +
+  coord_flip() +
+  theme_minimal() +
+  scale_fill_manual(values = c("#C0C0C0", "#FFD580")) +
+  geom_text(aes(label = n), color = "#333333", size = 3,
+            position = position_nudge(y = 600), fontface = "bold") +
+  labs(title = NULL,
+       y = NULL,
+       x = NULL) +
+  theme(axis.text = element_blank(),
+        legend.position = "none") -> fig2
+```
+
+```{r}
+data1 |> 
+  group_by(decade) |> 
+  summarise(n = sum(n)) |> 
+  mutate(variable = if_else(decade %in% "2010s", "yes", "no")) |> 
+  ggplot(aes(x = decade, y = n, fill = variable)) +
+  geom_bar(stat = "identity", color = NA) +
+  theme_minimal() +
+  scale_fill_manual(values = c("#C0C0C0", "#FFD580")) +
+  geom_text(aes(label = n), color = "#333333", size = 3,
+            position = position_nudge(y = 1500), fontface = "bold") +
+  labs(title = NULL,
+       y = NULL,
+       x = NULL) +
+  theme(axis.text = element_blank(),
+        legend.position = "none") -> fig3
+```
 
 
 
 
 ```{r}
-data1 %>%
-  ggplot(aes(x = decade, y = program_desc, fill = n)) + 
-  geom_tile() +
-  scale_fill_viridis_c(option = "H") +
-  theme_minimal() +
-  labs(title = NULL,
-       y = NULL,
-       x = NULL) +
-  theme(legend.position = "bottom")
+fig1 / fig3 -> fig_x
+
+fig2 / plot_spacer() -> fig_y
+
+(fig_x | fig_y) +
+  annotate("text", x = 100, y = 300, label = "ass")
+
+ggsave("fig.png", bg = "beige", height = 10, width = 12)
 ```
 
+
+```{r}
+data2 |> 
+  ggplot(aes(x = year, y = n)) +
+  geom_line() +
+  facet_wrap(~ program_desc, ncol = 3)
+
+ggsave("fig1.png")
+```

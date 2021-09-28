@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 40 - NBER
+
+![NBER' figure](2021/week_40-nber/fig.png)
+
 ### Week 39 - Emmy Awards
 
 ![Emmy Awards' figure](2021/week_39-emmy/fig.png)
