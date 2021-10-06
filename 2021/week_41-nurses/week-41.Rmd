@@ -106,7 +106,7 @@ fig1 +
            color = "#333333",
            family = "girassol") + 
   annotate("text", x = 1998, y = 62, 
-           label = "The difference between top and bottom median hourly wage by state has increased in the past 20 years",
+           label = "The difference between top and bottom median hourly wage among the 50 states has increased in the past 20 years",
            hjust = 0, 
            size = 10,
            color = "#333333",
@@ -118,6 +118,8 @@ fig1 +
            color = "gray70",
            family = "lato") -> fig2
 ```
+
+
 ```{r}
 scales::show_col(calc_pal()(7))
 ```
@@ -214,21 +216,23 @@ fig3 +
            family = "lato") -> fig4
 ```
 
-
 ```{r}
-label1 <- "A nurse in California earned twice more than a nurse in Alabama during the pandemic in 2020"
+label1 <- "A nurse in <i style='color:#ff420e;'>California</i> earned twice more than a nurse in <i style='color:#004586;'>Alabama</i> during the pandemic in 2020"
+
 
 fig4 +
-  annotate("text", x = 2004, y = 10,
-           label = label1, 
-           size = 10,
-           hjust = 0,
-           lineheight = 0.3,
-           color = "#333333",
-           family = "lato") 
-
+  geom_richtext(x = 2002, y = 10, label = label1,
+                hjust = 0,
+                color = "#333333",
+                fill = NA, 
+                size = 10,
+                label.color = NA,
+                family = "lato")
 
 ggsave("fig.png", bg = "#F9F6EE", height = 6)
 ```
+
+
+
 
 

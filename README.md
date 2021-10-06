@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 41 - Nurses wages
+
+![NBER' figure](2021/week_41-nurses/fig.png)
+
 ### Week 40 - NBER
 
 ![NBER' figure](2021/week_40-nber/fig.png)
@@ -104,7 +108,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ![Water Sources](/2021/week_19-water/map.png)
 
 
-### Week 19 - CEO Departures
+### Week 18 - CEO Departures
 
 ![CEO](/2021/week_18-ceo/fig.png)
 
@@ -123,7 +127,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 ![UN](/2021/week_13-votes/south_america.png)
 
 
-### Week 13 - Wealth
+### Week 7 - Wealth
 
 ![Retirement](2021/week_7-wealth/retirement.gif)
 
