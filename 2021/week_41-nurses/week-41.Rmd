@@ -1,0 +1,234 @@
+---
+title: "week-41"
+author: "Maxwel Coura Oliveira"
+date: "10/4/2021"
+output: html_document
+---
+
+```{r}
+options(scipen = 999)
+library(tidyverse)
+library(dplyr)
+library(ggthemes)
+library(hrbrthemes)
+library(ggrepel)
+library(ggtext)
+```
+
+
+```{r}
+nurses <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-05/nurses.csv')
+```
+```{r}
+nurses |> 
+  janitor::clean_names() |> 
+  filter(!state %in% c("Puerto Rico", "Guam", "Virgin Islands")) |> 
+  filter(!is.na(hourly_wage_median)) |> 
+  group_by(year) |> 
+  mutate(h_wage_max = if_else(hourly_wage_median == max(hourly_wage_median), TRUE, FALSE),
+         h_wage_min = if_else(hourly_wage_median == min(hourly_wage_median), TRUE, FALSE)) |> 
+  filter(h_wage_max == TRUE | h_wage_min == TRUE) |> 
+  dplyr::select(state, year, total_employed_rn, hourly_wage_median) -> nurses1
+```
+
+
+```{r}
+nurses |> 
+  janitor::clean_names() |> 
+  filter(!state %in% c("Puerto Rico", "Guam", "Virgin Islands")) |> 
+  filter(!is.na(hourly_wage_median)) |> 
+  group_by(year) |> 
+  mutate(h_wage_max = if_else(hourly_wage_median == max(hourly_wage_median), TRUE, FALSE),
+         h_wage_min = if_else(hourly_wage_median == min(hourly_wage_median), TRUE, FALSE)) |> 
+  filter(h_wage_max == FALSE & h_wage_min == FALSE) |> 
+  dplyr::select(state, year, total_employed_rn, hourly_wage_median) -> nurses2
+```
+
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Girassol", "girassol")
+font_add_google("Lato", "lato")
+```
+
+```{r}
+nurses2 |> 
+  ggplot(aes(x = year, 
+             y = hourly_wage_median, 
+             size = total_employed_rn)) +
+  geom_jitter(alpha = 0.02) +
+  geom_line(data = nurses1, aes(x = year, 
+                                 y = hourly_wage_median, group = year),
+            size = 1, alpha = 0.1) +
+  geom_point(data = nurses1, aes(x = year, 
+                                 y = hourly_wage_median, 
+                                 color =  state), show.legend = FALSE) +
+  labs(y = NULL, x = NULL, size = NULL,
+       title = NULL,
+       subtitle = NULL,
+       caption = NULL) +
+  scale_y_continuous(limits = c(0, 65),
+                     labels = scales::number_format(prefix = "US$ ")) +
+  scale_x_continuous(limits = c(1998, 2023)) +
+  scale_size_continuous(name = "Total employed registered nurses",
+                          breaks = c(50000, 150000, 250000, 350000),
+                          limits = c(0, 350000),
+                        labels = c("50K", "150K", "250K", "350K"),
+                        guide = guide_legend(title.position = "top",
+                                             override.aes = list(colour = "#333333",
+                                                                 alpha = 0.5))) +
+  theme_minimal() +
+  scale_color_calc() +
+  theme(legend.position = c(0.27, 0.83),
+        legend.direction = "horizontal",
+        legend.title = element_markdown(size = 22, 
+                                        family = "lato", 
+                                        face = "bold"),
+        legend.text = element_markdown(size = 20, 
+                                       family = "lato"),
+        axis.text = element_markdown(size = 35, 
+                                     family = "girassol"),
+        plot.title = element_markdown(size = 60),
+        plot.subtitle = element_markdown(size = 45)) -> fig1
+```
+
+
+
+```{r}
+fig1 +
+  annotate("text", x = 1998, y = 65, 
+           label = "Hourly Wage of Registered Nurses in the US",
+           hjust = 0, 
+           size = 25,
+           fontface = "bold",
+           color = "#333333",
+           family = "girassol") + 
+  annotate("text", x = 1998, y = 62, 
+           label = "The difference between top and bottom median hourly wage by state has increased in the past 20 years",
+           hjust = 0, 
+           size = 10,
+           color = "#333333",
+           family = "lato") +
+  annotate("text", x = 1998, y = 0, 
+           label = "Source: Data.World | Figure: @maxwelco",
+           hjust = 0, 
+           size = 7,
+           color = "gray70",
+           family = "lato") -> fig2
+```
+```{r}
+scales::show_col(calc_pal()(7))
+```
+
+
+```{r}
+fig2 +
+annotate("text", x = 2010, y = 46, 
+        label = "California", 
+        size = 15,
+        color = "#ff420e",
+        fontface = "italic",
+        family = "lato") +
+  annotate("text", x = 2017, y = 53, 
+           label = "Hawaii", 
+           size = 15,
+           color = "#ffd320",
+           fontface = "italic",
+           family = "lato") +
+  annotate("text", x = 2000.4, y = 32, 
+           label = "Maryland", 
+           size = 15,
+           color = "#7e0021",
+           fontface = "italic",
+           family = "lato") +
+  annotate("text", x = 2014, y = 22, 
+           label = "South Dakota", 
+           size = 15,
+           color = "#314004",
+           fontface = "italic",
+           family = "lato") +
+  annotate("text", x = 2006, y = 19, 
+           label = "Iowa", 
+           size = 15,
+           color = "#579d1c",
+           fontface = "italic",
+           family = "lato") +
+  annotate("text", x = 2020, y = 25, 
+           label = "Mississippi",
+           size = 15,
+           color = "#83caff",
+           fontface = "italic",
+           family = "lato") +
+  annotate("text", x = 2022.2, y = 29, 
+           label = "Alabama", 
+           size = 15,
+           color = "#004586",
+           fontface = "italic",
+           family = "lato") +
+  annotate("text", x = 2013, y = 34, 
+           label = "Other states", 
+           size = 15,
+           color = "#333333",
+           alpha = 0.1,
+           fontface = "italic",
+           family = "lato") -> fig3
+```
+
+
+```{r}
+nurses1 |> 
+  group_by(year) |> 
+  mutate(number = row_number()) |> 
+  ungroup() |> 
+  pivot_wider(id_cols = year, names_from = number, values_from = hourly_wage_median) |> 
+  mutate(diff = abs(`1` - `2`)) |> 
+  arrange(diff)
+```
+
+
+```{r}
+fig3 +
+  geom_curve(x = 2020, y = 50, xend = 2020.5, yend = 51.7,
+             arrow = arrow(length = unit(0.05, "inch")), 
+             size = 0.4, curvature = -0.3, color = "#000000") +
+  annotate("text", x = 2020.6, y = 52, 
+           label = "Maximum \ndifference (US$ 28.74)", 
+           size = 7,
+           hjust = 0,
+           lineheight = 0.3,
+           color = "#333333",
+           fontface = "italic",
+           family = "lato") +
+  geom_curve(x = 2000, y = 16.8, xend = 2000.7, yend = 15.5,
+             arrow = arrow(length = unit(0.05, "inch")), 
+             size = 0.4, curvature = 0.3, color = "#000000") +
+  annotate("text", x = 2001, y = 15.6, 
+           label = "Minimum \ndifference (US$ 9.68)", 
+           size = 7,
+           hjust = 0,
+           lineheight = 0.3,
+           color = "#333333",
+           fontface = "italic",
+           family = "lato") -> fig4
+```
+
+
+```{r}
+label1 <- "A nurse in California earned twice more than a nurse in Alabama during the pandemic in 2020"
+
+fig4 +
+  annotate("text", x = 2004, y = 10,
+           label = label1, 
+           size = 10,
+           hjust = 0,
+           lineheight = 0.3,
+           color = "#333333",
+           family = "lato") 
+
+
+ggsave("fig.png", bg = "#F9F6EE", height = 6)
+```
+
+
