@@ -41,7 +41,6 @@ font_add_google("Lato", "lato")
 
 
 
-
 ```{r}
 consumption1 |> 
   filter(year == 2017) |>  
@@ -63,17 +62,25 @@ consumption1 |>
                     place = "centre",
                     min.size = 0.1,
                     grow = TRUE) +
-  labs(title = "Global per capita seafood consumption",
-       subtitle = "Proportion of seafood consumption for a country population within a continent in 2017",
+  labs(title = "Global seafood consumption",
+       subtitle = "Seafood consumption in kg per capita for a country population within a continent in 2017",
        caption = "**Source:** OurWorldinData.org | **Figure:** @maxwelco") +
-  scale_fill_viridis_c(option = "H") +
-  theme(legend.position = "none",
+  scale_fill_viridis_c(option = "H",
+                       limits = c(0, 100), 
+                       breaks= c(0, 50, 100),
+                       labels= c("0 kg", 
+                                 "50 kg", 
+                                 "100 kg")) +
+  theme(legend.position = "right",
+        legend.background = element_rect(fill = "#F9F6EE"),
+        legend.text = element_markdown(size = 20, face = "bold"),
+        legend.title = element_blank(),
         plot.title = element_markdown(family = "oswald",
-                                      size = 60),
+                                      size = 65),
         plot.subtitle = element_markdown(family = "lato",
-                                         size = 20),
+                                         size = 25),
         plot.caption = element_markdown(family = "lato",
-                                         size = 10),
+                                         size = 15),
         plot.background = element_rect(fill = "#F9F6EE"))
 
 ggsave("fig_42.png")
