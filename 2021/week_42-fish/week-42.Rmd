@@ -1,31 +1,20 @@
 ---
-title: "week-42"
+title: "week-42" 
 author: "Maxwel Coura Oliveira"
 date: "10/12/2021"
 output: html_document
 ---
 
 ```{r}
-farmed <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/aquaculture-farmed-fish-production.csv')
-captured_vs_farmed <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/capture-fisheries-vs-aquaculture.csv')
-captured <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/capture-fishery-production.csv')
 consumption <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/fish-and-seafood-consumption-per-capita.csv')
-stock <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/fish-stocks-within-sustainable-levels.csv')
-fishery <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/global-fishery-catch-by-sector.csv')
-production <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/seafood-and-fish-production-thousand-tonnes.csv')
 ```
-
-```{r}
-consumption |> 
-  filter(Entity == "Haiti")
-```
-
 
 
 ```{r}
 library(countrycode)
 library(treemapify)
-library(gganimate)
+library(tidyverse)
+library(ggtext)
 ```
 
 ```{r}
@@ -40,127 +29,63 @@ consumption |>
   filter(!is.na(code)) |> 
   left_join(continent, by = c("code" = "iso3c")) |> 
   filter(!is.na(entity)) |> 
-  rename(per_capita = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020) -> consumption1
+  rename(per_capita = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020) |> 
+  mutate_if(is_character, as_factor) -> consumption1
 ```
+
 
 ```{r}
-p <- ggplot(consumption1, aes(
-    label = entity,
-    area = per_capita,
-    subgroup = continent,
-    fill = entity
-  )) +
-  geom_treemap(layout = "fixed") +
-  geom_treemap_text(layout = "fixed", place = "centre", grow = TRUE, colour = "white") +
-  geom_treemap_subgroup_text(layout = "fixed", place = "centre") +
-  geom_treemap_subgroup_border(layout = "fixed") +
-#  transition_time(year) +
-  ease_aes('linear') +
- # labs(title = "Year: {frame_time}") +
-  theme(legend.position = "none")
-p
-#anim_save("animated_treemap.gif", p, nframes = 48)
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Oswald", "oswald")
+font_add_google("Lato", "lato")
 ```
-
 
 
 ```{r}
 consumption1 |> 
-#  filter(year == 2017) |>  
+  filter(year == 2017) |>  
   ggplot(aes(area = per_capita, 
-             fill = entity, 
+             fill = per_capita, 
              label = entity,
              subgroup = continent)) +
   geom_treemap(show.legend = FALSE) +
   geom_treemap_subgroup_border() +
-  geom_treemap_subgroup_text(place = "centre", grow = T, alpha = 0.5, colour =
-                             "black", fontface = "italic", min.size = 0) +
-  geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
+  geom_treemap_subgroup_text(place = "centre", 
+                             family = "oswald",
+                             grow = TRUE, 
+                             alpha = 0.5, 
+                             color = "#333333", 
+                             min.size = 0.1) +
+  geom_treemap_text(fontface = "italic", 
+                    color = "#F9F6EE",
+                    family = "lato",
+                    place = "centre",
+                    min.size = 0.1,
                     grow = TRUE) +
-  transition_time(year) +
-  labs(title = "Year: {frame_time}") +
-  theme(legend.position = "none") -> fig
+  labs(title = "World per capita seafood consumption",
+       subtitle = "Proportion of seafood consumption for a country population within a continent in 2017",
+       caption = "**Source:** OurWorldinData.org | **Figure:** @maxwelco") +
+  scale_fill_viridis_c(option = "H") +
+  theme(legend.position = "none",
+        plot.title = element_markdown(family = "oswald",
+                                      size = 60),
+        plot.subtitle = element_markdown(family = "lato",
+                                         size = 20),
+        plot.caption = element_markdown(family = "lato",
+                                         size = 10),
+        plot.background = element_rect(fill = "#F9F6EE"))
 
-#ggsave("fig.png")
-anim_save("fig_42.gif", fig, nframes = 48)
+ggsave("fig_42.png")
 ```
 
 
-```{r}
-consumption |> 
-  janitor::clean_names() |> 
-  filter(is.na(code) | entity == c("Maldives", "Portugal")) |> 
-  filter(entity %in% c("Africa", "Asia", "Central America", "Europe", "Portugal",
-                       "Maldives", "South America", "Northern America", "Oceania")) |> 
-    ggplot(aes(x = year,
-             y = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020, 
-             color = entity, group = entity)) +
-  geom_line() +
-  geom_point()
-```
+``
 
 
 
-```{r}
-consumption |> 
-  janitor::clean_names() |> 
-  filter(is.na(code) | entity == c("Maldives", "China")) |> 
-  mutate(variable = if_else(entity == c("Maldives", "China"), TRUE, FALSE)) |> 
-  ggplot(aes(x = year,
-             y = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020, 
-             color = variable, group = entity)) +
-  geom_line() +
-  geom_point()
-```
-
-
-```{r}
-mutate(variable = if_else(entity == "Maldives", TRUE, FALSE)) |> 
-  group_by(variable, year) |> 
-  summarise(sum = sum(fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020)) |> 
-  ggplot(aes(x = year,
-             y = sum, 
-             color = variable)) +
-  geom_line(show.legend = FALSE) +
-  geom_point()
-```
 
 
 
-```{r}
-consumption |> 
-  janitor::clean_names() |> 
-  filter(!is.na(code)) |> 
-  mutate(variable = if_else(entity == "Maldives", TRUE, FALSE)) -> consumption1
-```
-
-
-```{r}
-consumption1 |> 
-  filter(fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020 > 70)
-```
-
-
-```{r}
-consumption1 |> 
-  janitor::clean_names() |> 
-  ggplot(aes(x = year,
-             y = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020, 
-             group = entity,
-             color = variable)) +
-  geom_line(show.legend = FALSE)
-```
-
-
-```{r}
-library(tidyverse)
-```
-
-```{r}
-tuesdata <- tidytuesdayR::tt_load(2021, week = 42)
-```
-
-```{r}
-tuesdata$
-```
 
