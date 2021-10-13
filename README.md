@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 42 - Global Seafood
+
+![NBER' figure](2021/week_42-seafood/fig_42.png)
+
 ### Week 41 - Nurses wages
 
 ![NBER' figure](2021/week_41-nurses/fig.png)
