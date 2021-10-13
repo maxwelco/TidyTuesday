@@ -79,4 +79,4 @@ consumption1 |>
 ggsave("fig_42.png")
 ```
 
-\`\`
+
