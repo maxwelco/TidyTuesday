@@ -15,14 +15,139 @@ fishery <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/ti
 production <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-12/seafood-and-fish-production-thousand-tonnes.csv')
 ```
 
+```{r}
+consumption |> 
+  filter(Entity == "Haiti")
+```
+
+
+
+```{r}
+library(countrycode)
+library(treemapify)
+library(gganimate)
+```
+
+```{r}
+codelist |> 
+  dplyr::select(continent, iso3c, country.name.en) -> continent
+```
 
 
 ```{r}
 consumption |> 
   janitor::clean_names() |> 
-  filter(entity == "China") |> 
+  filter(!is.na(code)) |> 
+  left_join(continent, by = c("code" = "iso3c")) |> 
+  filter(!is.na(entity)) |> 
+  rename(per_capita = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020) -> consumption1
+```
+
+```{r}
+p <- ggplot(consumption1, aes(
+    label = entity,
+    area = per_capita,
+    subgroup = continent,
+    fill = entity
+  )) +
+  geom_treemap(layout = "fixed") +
+  geom_treemap_text(layout = "fixed", place = "centre", grow = TRUE, colour = "white") +
+  geom_treemap_subgroup_text(layout = "fixed", place = "centre") +
+  geom_treemap_subgroup_border(layout = "fixed") +
+#  transition_time(year) +
+  ease_aes('linear') +
+ # labs(title = "Year: {frame_time}") +
+  theme(legend.position = "none")
+p
+#anim_save("animated_treemap.gif", p, nframes = 48)
+```
+
+
+
+```{r}
+consumption1 |> 
+#  filter(year == 2017) |>  
+  ggplot(aes(area = per_capita, 
+             fill = entity, 
+             label = entity,
+             subgroup = continent)) +
+  geom_treemap(show.legend = FALSE) +
+  geom_treemap_subgroup_border() +
+  geom_treemap_subgroup_text(place = "centre", grow = T, alpha = 0.5, colour =
+                             "black", fontface = "italic", min.size = 0) +
+  geom_treemap_text(fontface = "italic", colour = "white", place = "centre",
+                    grow = TRUE) +
+  transition_time(year) +
+  labs(title = "Year: {frame_time}") +
+  theme(legend.position = "none") -> fig
+
+#ggsave("fig.png")
+anim_save("fig_42.gif", fig, nframes = 48)
+```
+
+
+```{r}
+consumption |> 
+  janitor::clean_names() |> 
+  filter(is.na(code) | entity == c("Maldives", "Portugal")) |> 
+  filter(entity %in% c("Africa", "Asia", "Central America", "Europe", "Portugal",
+                       "Maldives", "South America", "Northern America", "Oceania")) |> 
+    ggplot(aes(x = year,
+             y = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020, 
+             color = entity, group = entity)) +
+  geom_line() +
+  geom_point()
+```
+
+
+
+```{r}
+consumption |> 
+  janitor::clean_names() |> 
+  filter(is.na(code) | entity == c("Maldives", "China")) |> 
+  mutate(variable = if_else(entity == c("Maldives", "China"), TRUE, FALSE)) |> 
   ggplot(aes(x = year,
-             y = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020, color = entity)) +
+             y = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020, 
+             color = variable, group = entity)) +
+  geom_line() +
+  geom_point()
+```
+
+
+```{r}
+mutate(variable = if_else(entity == "Maldives", TRUE, FALSE)) |> 
+  group_by(variable, year) |> 
+  summarise(sum = sum(fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020)) |> 
+  ggplot(aes(x = year,
+             y = sum, 
+             color = variable)) +
+  geom_line(show.legend = FALSE) +
+  geom_point()
+```
+
+
+
+```{r}
+consumption |> 
+  janitor::clean_names() |> 
+  filter(!is.na(code)) |> 
+  mutate(variable = if_else(entity == "Maldives", TRUE, FALSE)) -> consumption1
+```
+
+
+```{r}
+consumption1 |> 
+  filter(fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020 > 70)
+```
+
+
+```{r}
+consumption1 |> 
+  janitor::clean_names() |> 
+  ggplot(aes(x = year,
+             y = fish_seafood_food_supply_quantity_kg_capita_yr_fao_2020, 
+             group = entity,
+             color = variable)) +
   geom_line(show.legend = FALSE)
 ```
 
