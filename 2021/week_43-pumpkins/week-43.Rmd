@@ -1,0 +1,46 @@
+---
+title: "week-43"
+author: "Maxwel Coura Oliveira"
+date: "10/19/2021"
+output: html_document
+---
+
+```{r}
+pumpkins <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-19/pumpkins.csv')
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+pumpkins |> 
+  separate(id, c("year", "type"), sep = "-") |> 
+  mutate_at(c("year", "place", "weight_lbs", "ott", 
+              "est_weight", "pct_chart"), as.double) |> 
+  mutate_if(is_character, as_factor) |> 
+  mutate(weight_kg = round(weight_lbs * 0.4535924,1)) -> pumpkins1
+```
+
+```{r}
+pumpkins1 |> 
+  count(country, type) |> 
+  arrange(desc(n))
+```
+
+
+
+
+```{r}
+library(ggridges)
+pumpkins1 |> 
+  ggplot(aes(x = weight_kg, y = type)) +
+  geom_density_ridges(stat = "binline", bins = 20, 
+                      scale = 0.95, draw_baseline = FALSE) +
+  theme_ridges()
+
+ggsave("fig_43.png", bg = "white", height = 8)
+```
+
+
+
