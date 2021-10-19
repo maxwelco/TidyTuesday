@@ -18,6 +18,13 @@ pumpkins |>
   separate(id, c("year", "type"), sep = "-") |> 
   mutate_at(c("year", "place", "weight_lbs", "ott", 
               "est_weight", "pct_chart"), as.double) |> 
+  mutate(type = fct_recode(type,
+                           "Field pumpkin" = "F",
+                           "Giant pumpkin" = "P",
+                           "Giant squash" = "S",
+                           "Giant watermelon" = "W",
+                           "Long gourd" = "L",
+                           "Tomato" = "T")) |> 
   mutate_if(is_character, as_factor) |> 
   mutate(weight_kg = round(weight_lbs * 0.4535924,1)) -> pumpkins1
 ```
