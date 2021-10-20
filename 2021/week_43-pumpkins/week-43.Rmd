@@ -84,7 +84,7 @@ pumpkins1 |>
   arrange(desc(n)) |> 
   group_by(type) |> 
   mutate(id = row_number()) |> 
-  filter(id < 21) |> 
+  filter(id < 11) |> 
   ungroup() |> 
   left_join(names, by = c("state_prov", "grower_name")) |> 
   distinct(type, grower_name, n, id, state_prov, flag) -> pumpkins2
@@ -136,10 +136,10 @@ pumpkins3 |>
                mapping = aes(x = grower_name, 
                  y = 0), 
                  emoji = "1f3c6") +
-  ylim(0, 34) +
+  ylim(0, 43) +
   geom_text(aes(y = n + 2, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
-  theme(axis.text = element_markdown(size = 30,
+  theme(axis.text = element_markdown(size = 35,
                                      family = "lato"),
         panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
@@ -168,10 +168,10 @@ pumpkins3 |>
                mapping = aes(x = grower_name, 
                  y = 0), 
                  emoji = "1f3c6") +
-  ylim(0, 40) +
+  ylim(0, 43) +
   geom_text(aes(y = n + 2, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
-  theme(axis.text = element_markdown(size = 30,
+  theme(axis.text = element_markdown(size = 35,
                                      family = "lato"),
         panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
@@ -201,10 +201,10 @@ pumpkins3 |>
                mapping = aes(x = grower_name, 
                  y = 0), 
                  emoji = "1f3c6") +
-  ylim(0, 60) +
+  ylim(0, 70) +
   geom_text(aes(y = n + 3, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
-  theme(axis.text = element_markdown(size = 30,
+  theme(axis.text = element_markdown(size = 35,
                                      family = "lato"),
         panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
@@ -236,10 +236,10 @@ pumpkins3 |>
                mapping = aes(x = grower_name, 
                  y = 0),
                  emoji = "1f3c6") +
-  ylim(0, 65) +
+  ylim(0, 70) +
   geom_text(aes(y = n + 3, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
-  theme(axis.text = element_markdown(size = 30,
+  theme(axis.text = element_markdown(size = 35,
                                      family = "lato"),
         panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
@@ -266,7 +266,7 @@ pumpkins3 |>
   ylim(0, 70) +
   geom_text(aes(y = n + 3, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
-  theme(axis.text = element_markdown(size = 30,
+  theme(axis.text = element_markdown(size = 35,
                                      family = "lato"),
         panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
@@ -297,10 +297,10 @@ pumpkins3 |>
                drop_na(),
                mapping = aes(x = grower_name, y = 0), 
                  emoji = "1f3c6") +
-  ylim(0, 40) +
+  ylim(0, 43) +
   geom_text(aes(y = n + 2, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
-  theme(axis.text = element_markdown(size = 30,
+  theme(axis.text = element_markdown(size = 35,
                                      family = "lato"),
         panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
@@ -313,18 +313,19 @@ pumpkins3 |>
 ```{r}
 library(patchwork)
 
-(tomato + giant_wat + long_gou) / (giant_pum + field_pum + giant_sq) +
-   plot_annotation(title = "Most frequent participating growers in the <b style='color:#ff7518;'>Great Pumpkin Commonwealth</b><img src='https://gpc1.org/wp-content/uploads/2018/11/GPCMedium512.png' width='25'/>",
-                   subtitle = "Number of attemps made by growers to win the contest by <b style='color:4;'>category</b>. A <img src='https://uc-emoji.azureedge.net/orig/2e/0c6ff8789032ae9f484280fd98ac74.png' width='10'/> represents at least a first place from 2013 to 2021.",
+(field_pum + giant_wat) / (giant_pum + long_gou) / (tomato +  giant_sq) +
+   plot_annotation(title = "Growers participation in the <b style='color:#ff7518;'>Great Pumpkin Commonwealth</b><img src='https://gpc1.org/wp-content/uploads/2018/11/GPCMedium512.png' width='25'/>",
+                   subtitle = "Number of attemps made by the top 10 growers to win the contest by <b style='color:4;'>category</b>. A <img src='https://uc-emoji.azureedge.net/orig/2e/0c6ff8789032ae9f484280fd98ac74.png' width='10'/> represents at least a first place <br>from 2013 to 2021",
                    caption = "**Source**: BigPumpkins.com | **Figure**: @maxwelco",
                   theme = theme(plot.title = element_markdown(size = 60,
                                                               family = "lato",
                                                               face = "bold"),
                                 plot.subtitle = element_markdown(size = 35,
+                                                                 lineheight = 0.4,
                                                                  family = "lato"),
                                 plot.caption = element_markdown(size = 25,
                                                                 family = "lato",
                                                                 color = "gray60"))) 
 
-ggsave("fig_43.png", bg = "#F9F6EE", width = 14, height = 10)
+ggsave("fig_43.png", bg = "#F9F6EE", width = 8, height = 12)
 ```
