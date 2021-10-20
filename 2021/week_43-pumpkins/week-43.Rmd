@@ -14,6 +14,7 @@ library(tidyverse)
 library(ggtext)
 library(ggthemes)
 library(ggflags)
+library(emoGG)
 ```
 
 
@@ -124,6 +125,7 @@ pumpkins3 |>
                size = 1.2,
                alpha = 0.5,
                color = "#333333") +
+  facet_wrap(. ~ type) +
   coord_flip() +
   labs(x = NULL, y = NULL) +
   theme_minimal() +
@@ -139,6 +141,7 @@ pumpkins3 |>
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 30,
                                      family = "lato"),
+        panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
                                       color = 4,
                                       face = "bold",
@@ -170,6 +173,7 @@ pumpkins3 |>
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 30,
                                      family = "lato"),
+        panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
                                       color = 4,
                                       face = "bold",
@@ -202,6 +206,7 @@ pumpkins3 |>
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 30,
                                      family = "lato"),
+        panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
                                       color = 4,
                                       face = "bold",
@@ -236,6 +241,7 @@ pumpkins3 |>
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 30,
                                      family = "lato"),
+        panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
                                       color = 4,
                                       face = "bold",
@@ -262,6 +268,7 @@ pumpkins3 |>
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 30,
                                      family = "lato"),
+        panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
                                       color = 4,
                                       face = "bold",
@@ -295,6 +302,7 @@ pumpkins3 |>
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 30,
                                      family = "lato"),
+        panel.grid.major.y=element_blank(),
         strip.text = element_markdown(size = 35, 
                                       color = 4,
                                       face = "bold",
@@ -307,11 +315,16 @@ library(patchwork)
 
 (tomato + giant_wat + long_gou) / (giant_pum + field_pum + giant_sq) +
    plot_annotation(title = "Most frequent participating growers in the <b style='color:#ff7518;'>Great Pumpkin Commonwealth</b><img src='https://gpc1.org/wp-content/uploads/2018/11/GPCMedium512.png' width='25'/>",
-                   subtitle = "Number of attemps made by growers from 2013 to 2021 to win the contest by <b style='color:4;'>category</b>. A <img src='https://uc-emoji.azureedge.net/orig/2e/0c6ff8789032ae9f484280fd98ac74.png' width='10'/> represents at least a first place.",
-                  theme = theme(plot.title = element_markdown(size = 60),
-                                plot.subtitle = element_markdown(size = 35))) & 
-  theme(plot.title = element_markdown(family = "lato",
-                                      face = "bold"))
+                   subtitle = "Number of attemps made by growers to win the contest by <b style='color:4;'>category</b>. A <img src='https://uc-emoji.azureedge.net/orig/2e/0c6ff8789032ae9f484280fd98ac74.png' width='10'/> represents at least a first place from 2013 to 2021.",
+                   caption = "**Source**: BigPumpkins.com | **Figure**: @maxwelco",
+                  theme = theme(plot.title = element_markdown(size = 60,
+                                                              family = "lato",
+                                                              face = "bold"),
+                                plot.subtitle = element_markdown(size = 35,
+                                                                 family = "lato"),
+                                plot.caption = element_markdown(size = 25,
+                                                                family = "lato",
+                                                                color = "gray60"))) 
 
-ggsave("fig_43.png", bg = "#F9F6EE", width = 14, height = 9)
+ggsave("fig_43.png", bg = "#F9F6EE", width = 14, height = 10)
 ```
