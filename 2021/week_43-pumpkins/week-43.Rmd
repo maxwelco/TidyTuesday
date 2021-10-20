@@ -11,7 +11,11 @@ pumpkins <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/t
 
 ```{r}
 library(tidyverse)
+library(ggtext)
+library(ggthemes)
+library(ggflags)
 ```
+
 
 ```{r}
 pumpkins |> 
@@ -19,35 +23,295 @@ pumpkins |>
   mutate_at(c("year", "place", "weight_lbs", "ott", 
               "est_weight", "pct_chart"), as.double) |> 
   mutate(type = fct_recode(type,
-                           "Field pumpkin" = "F",
-                           "Giant pumpkin" = "P",
-                           "Giant squash" = "S",
-                           "Giant watermelon" = "W",
-                           "Long gourd" = "L",
+                           "Field Pumpkin" = "F",
+                           "Giant Pumpkin" = "P",
+                           "Giant Squash" = "S",
+                           "Giant Watermelon" = "W",
+                           "Long Gourd" = "L",
                            "Tomato" = "T")) |> 
   mutate_if(is_character, as_factor) |> 
-  mutate(weight_kg = round(weight_lbs * 0.4535924,1)) -> pumpkins1
+  mutate(weight_lbs = if_else(is.na(weight_lbs), est_weight, weight_lbs)) |> 
+  mutate(weight_kg = case_when(
+    type != "Long Gourd" ~ round(weight_lbs * 0.4535924,1),
+    TRUE ~ round(weight_lbs * 2.54,1)
+    )) -> pumpkins1
 ```
 
 ```{r}
 pumpkins1 |> 
-  count(country, type) |> 
-  arrange(desc(n))
+  filter(grower_name == "Treece, Jef")
+```
+
+
+```{r}
+pumpkins1 |> 
+  count(grower_name, type) |>
+  arrange(desc(n)) 
+```
+
+
+```{r}
+library(countrycode)
+
+flags <- pumpkins1 %>% 
+  pull(country) 
+
+countrycode(flags, 'country.name', 'iso2c') |> 
+  as_tibble() %>% 
+  rename(flag = value) %>% 
+  mutate(flag = str_to_lower(flag)) -> flags1
+```
+
+```{r}
+pumpkins1 |> 
+  bind_cols(flags1) |> 
+  dplyr::select(grower_name, state_prov, flag) -> names
+```
+
+
+```{r}
+pumpkins1 |> 
+  filter(place == 1) |> 
+  filter(type == "Giant Watermelon")
+```
+
+
+
+```{r}
+pumpkins1 |> 
+  count(type, state_prov, grower_name) |> 
+  arrange(desc(n)) |> 
+  group_by(type) |> 
+  mutate(id = row_number()) |> 
+  filter(id < 21) |> 
+  ungroup() |> 
+  left_join(names, by = c("state_prov", "grower_name")) |> 
+  distinct(type, grower_name, n, id, state_prov, flag) -> pumpkins2
+```
+
+
+```{r}
+pumpkins1 |> 
+  filter(place == 1) |> 
+  count(type, grower_name) |> 
+  rename(win = n) -> win
+```
+
+```{r}
+pumpkins2 |> 
+  left_join(win) -> pumpkins3
+```
+
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Amatic SC", "amatic") 
+font_add_google("Lato", "lato") 
+font_add_google("Syncopate", "syncopate")
+```
+
+                           
+  
+
+```{r}
+pumpkins3 |> 
+  filter(type == "Giant Squash") |> 
+  ggplot(aes(x = fct_reorder(grower_name,n), y = n, 
+             country = flag)) +
+  geom_segment(aes(xend = grower_name, yend = 0), 
+               size = 1.2,
+               alpha = 0.5,
+               color = "#333333") +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  geom_flag() +
+  geom_emoji(pumpkins3 |> 
+               filter(type == "Giant Squash") |> 
+               drop_na(),
+               mapping = aes(x = grower_name, 
+                 y = 0), 
+                 emoji = "1f3c6") +
+  ylim(0, 34) +
+  geom_text(aes(y = n + 2, label = state_prov),
+            hjust = 0, family = "amatic", size = 13) +
+  theme(axis.text = element_markdown(size = 30,
+                                     family = "lato"),
+        strip.text = element_markdown(size = 35, 
+                                      color = 4,
+                                      face = "bold",
+                                      family = "syncopate")) -> giant_sq
+```
+
+```{r}
+pumpkins3 |> 
+  filter(type == "Long Gourd") |> 
+  ggplot(aes(x = fct_reorder(grower_name,n), y = n, 
+             country = flag)) +
+  geom_segment(aes(xend = grower_name, yend = 0), 
+               size = 1.2,
+               alpha = 0.5,
+               color = "#333333") +
+  facet_wrap(. ~ type) +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  geom_flag() +
+  geom_emoji(pumpkins3 |> 
+               filter(type == "Long Gourd") |> 
+               drop_na(),
+               mapping = aes(x = grower_name, 
+                 y = 0), 
+                 emoji = "1f3c6") +
+  ylim(0, 40) +
+  geom_text(aes(y = n + 2, label = state_prov),
+            hjust = 0, family = "amatic", size = 13) +
+  theme(axis.text = element_markdown(size = 30,
+                                     family = "lato"),
+        strip.text = element_markdown(size = 35, 
+                                      color = 4,
+                                      face = "bold",
+                                      family = "syncopate")) -> long_gou
+```
+
+
+```{r}
+pumpkins3 |> 
+  filter(type == "Giant Pumpkin") |> 
+  ggplot(aes(x = fct_reorder(grower_name,n), y = n, 
+             country = flag)) +
+  geom_segment(aes(xend = grower_name, yend = 0), 
+               size = 1.2,
+               alpha = 0.5,
+               color = "#333333") +
+  facet_wrap(. ~ type) +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  geom_flag() +
+  geom_emoji(pumpkins3 |> 
+               filter(type == "Giant Pumpkin") |> 
+               drop_na(),
+               mapping = aes(x = grower_name, 
+                 y = 0), 
+                 emoji = "1f3c6") +
+  ylim(0, 60) +
+  geom_text(aes(y = n + 3, label = state_prov),
+            hjust = 0, family = "amatic", size = 13) +
+  theme(axis.text = element_markdown(size = 30,
+                                     family = "lato"),
+        strip.text = element_markdown(size = 35, 
+                                      color = 4,
+                                      face = "bold",
+                                      family = "syncopate")) -> giant_pum
+```
+  
+
+
+
+```{r}
+pumpkins3 |> 
+  filter(type == "Tomato") |> 
+  ggplot(aes(x = fct_reorder(grower_name,n), y = n, 
+             country = flag)) +
+  geom_segment(aes(xend = grower_name, yend = 0), 
+               size = 1.2,
+               alpha = 0.5,
+               color = "#333333") +
+  facet_wrap(. ~ type) +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  geom_flag() +
+  geom_emoji(pumpkins3 |> 
+               filter(type == "Tomato") |> 
+               drop_na(),
+               mapping = aes(x = grower_name, 
+                 y = 0),
+                 emoji = "1f3c6") +
+  ylim(0, 65) +
+  geom_text(aes(y = n + 3, label = state_prov),
+            hjust = 0, family = "amatic", size = 13) +
+  theme(axis.text = element_markdown(size = 30,
+                                     family = "lato"),
+        strip.text = element_markdown(size = 35, 
+                                      color = 4,
+                                      face = "bold",
+                                      family = "syncopate")) -> tomato
+```
+
+
+```{r}
+pumpkins3 |> 
+  filter(type == "Field Pumpkin") |> 
+  ggplot(aes(x = fct_reorder(grower_name,n), y = n, 
+             country = flag)) +
+  geom_segment(aes(xend = grower_name, yend = 0), 
+               size = 1.2,
+               alpha = 0.5,
+               color = "#333333") +
+  facet_wrap(. ~ type) +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  geom_flag() +
+  ylim(0, 70) +
+  geom_text(aes(y = n + 3, label = state_prov),
+            hjust = 0, family = "amatic", size = 13) +
+  theme(axis.text = element_markdown(size = 30,
+                                     family = "lato"),
+        strip.text = element_markdown(size = 35, 
+                                      color = 4,
+                                      face = "bold",
+                                      family = "syncopate")) -> field_pum
 ```
 
 
 
 
 ```{r}
-library(ggridges)
-pumpkins1 |> 
-  ggplot(aes(x = weight_kg, y = type)) +
-  geom_density_ridges(stat = "binline", bins = 20, 
-                      scale = 0.95, draw_baseline = FALSE) +
-  theme_ridges()
-
-ggsave("fig_43.png", bg = "white", height = 8)
+pumpkins3 |> 
+  filter(type == "Giant Watermelon") |> 
+  ggplot(aes(x = fct_reorder(grower_name,n), y = n, 
+             country = flag)) +
+  geom_segment(aes(xend = grower_name, yend = 0), 
+               size = 1.2,
+               alpha = 0.5,
+               color = "#333333") +
+  facet_wrap(. ~ type) +
+  coord_flip() +
+  labs(x = NULL, y = NULL) +
+  theme_minimal() +
+  geom_flag() +
+  geom_emoji(pumpkins3 |> 
+               filter(type == "Giant Watermelon") |> 
+               drop_na(),
+               mapping = aes(x = grower_name, y = 0), 
+                 emoji = "1f3c6") +
+  ylim(0, 40) +
+  geom_text(aes(y = n + 2, label = state_prov),
+            hjust = 0, family = "amatic", size = 13) +
+  theme(axis.text = element_markdown(size = 30,
+                                     family = "lato"),
+        strip.text = element_markdown(size = 35, 
+                                      color = 4,
+                                      face = "bold",
+                                      family = "syncopate")) -> giant_wat
 ```
 
 
+```{r}
+library(patchwork)
 
+(tomato + giant_wat + long_gou) / (giant_pum + field_pum + giant_sq) +
+   plot_annotation(title = "Most frequent participating growers in the <b style='color:#ff7518;'>Great Pumpkin Commonwealth</b><img src='https://gpc1.org/wp-content/uploads/2018/11/GPCMedium512.png' width='25'/>",
+                   subtitle = "Number of attemps made by growers from 2013 to 2021 to win the contest by <b style='color:4;'>category</b>. A <img src='https://uc-emoji.azureedge.net/orig/2e/0c6ff8789032ae9f484280fd98ac74.png' width='10'/> represents at least a first place.",
+                  theme = theme(plot.title = element_markdown(size = 60),
+                                plot.subtitle = element_markdown(size = 35))) & 
+  theme(plot.title = element_markdown(family = "lato",
+                                      face = "bold"))
+
+ggsave("fig.png", bg = "#F9F6EE", width = 14, height = 9)
+```
