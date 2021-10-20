@@ -7,7 +7,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ### Week 43 - Pumpkins
 
-![Pumpkins figure](2021/week_42-pumpkins/fig_43.png)
+![Pumpkins figure](2021/week_43-pumpkins/fig_43.png)
 
 ### Week 42 - Global Seafood
 
