@@ -5,13 +5,17 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 43 - Pumpkins
+
+![Pumpkins figure](2021/week_42-pumpkins/fig_43.png)
+
 ### Week 42 - Global Seafood
 
-![NBER' figure](2021/week_42-fish/fig_42.png)
+![Seafood figure](2021/week_42-fish/fig_42.png)
 
 ### Week 41 - Nurses wages
 
-![NBER' figure](2021/week_41-nurses/fig.png)
+![Nurses figure](2021/week_41-nurses/fig.png)
 
 ### Week 40 - NBER
 
