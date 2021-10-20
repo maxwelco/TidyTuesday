@@ -201,7 +201,7 @@ pumpkins3 |>
                mapping = aes(x = grower_name, 
                  y = 0), 
                  emoji = "1f3c6") +
-  ylim(0, 70) +
+  ylim(0, 75) +
   geom_text(aes(y = n + 3, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 35,
@@ -236,7 +236,7 @@ pumpkins3 |>
                mapping = aes(x = grower_name, 
                  y = 0),
                  emoji = "1f3c6") +
-  ylim(0, 70) +
+  ylim(0, 75) +
   geom_text(aes(y = n + 3, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 35,
@@ -263,7 +263,7 @@ pumpkins3 |>
   labs(x = NULL, y = NULL) +
   theme_minimal() +
   geom_flag() +
-  ylim(0, 70) +
+  ylim(0, 75) +
   geom_text(aes(y = n + 3, label = state_prov),
             hjust = 0, family = "amatic", size = 13) +
   theme(axis.text = element_markdown(size = 35,
@@ -315,7 +315,7 @@ library(patchwork)
 
 (field_pum + giant_wat) / (giant_pum + long_gou) / (tomato +  giant_sq) +
    plot_annotation(title = "Growers participation in the <b style='color:#ff7518;'>Great Pumpkin Commonwealth</b><img src='https://gpc1.org/wp-content/uploads/2018/11/GPCMedium512.png' width='25'/>",
-                   subtitle = "Number of attemps made by the top 10 growers to win the contest by <b style='color:4;'>category</b>. A <img src='https://uc-emoji.azureedge.net/orig/2e/0c6ff8789032ae9f484280fd98ac74.png' width='10'/> represents at least a first place <br>from 2013 to 2021",
+                   subtitle = "Number of attempts made by the top 10 growers to win the contest by <b style='color:4;'>category</b>. A <img src='https://uc-emoji.azureedge.net/orig/2e/0c6ff8789032ae9f484280fd98ac74.png' width='10'/> represents at least a first place <br>from 2013 to 2021",
                    caption = "**Source**: BigPumpkins.com | **Figure**: @maxwelco",
                   theme = theme(plot.title = element_markdown(size = 60,
                                                               family = "lato",
