@@ -1,0 +1,186 @@
+---
+title: "week-44"
+author: "Maxwel Coura Oliveira"
+date: "10/26/2021"
+output: html_document
+---
+
+
+```{r}
+library(tidyverse)
+library(ggtext)
+library(countrycode)
+library(ggthemes)
+```
+
+```{r}
+ultra_rankings <- readr::read_csv("https://raw.githubusercontent.com/BjnNowak/UltraTrailRunning/main/ranking_with_seconds.csv") |> 
+  janitor::clean_names()
+race <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-10-26/race.csv')
+```
+
+```{r}
+codelist |> 
+  dplyr::select(continent, iso3c, country.name.en) -> continent
+```
+
+```{r}
+ultra_rankings |> 
+  left_join(race, by = "race_year_id") |> 
+  left_join(continent, by = c("country" = "country.name.en")) -> running
+#  mutate(rank = if_else(is.na(rank), "Did not finish", as.character(rank))) 
+```
+
+```{r}
+running |> 
+  mutate(time_hour = time_in_seconds / 3600) |> 
+  filter(distance > 100) |> 
+  filter(!is.na(continent)) -> running1
+```
+
+
+```{r}
+running1 |> 
+  group_by(continent) |> 
+  summarise(time_hour = median(time_hour, na.rm = TRUE)) -> running2
+```
+
+```{r}
+library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Oswald", "oswald") 
+```
+
+
+```{r}
+# overal median
+running1 |> 
+  summarise(time_hour = median(time_hour, na.rm = TRUE))
+```
+
+
+```{r}
+running1 |> 
+  ggplot(aes(x = continent, y = time_hour)) +
+  geom_jitter(alpha = 0.05, 
+              shape = 1, 
+              color = "#000000") +
+  geom_segment(data = running2, 
+               aes(y = 32.40667, 
+                   yend = time_hour,
+                   x = continent, 
+                   xend = continent),
+               size = 1.5,
+               color = "#333333") +
+  geom_hline(yintercept = 32.40667, 
+             size = 1.5, 
+             color = "#C53151") +
+  geom_point(data = running2, 
+             aes(y = time_hour), 
+             size = 7, 
+             color = "#FFD12A") +
+  geom_text(data = running2, 
+            aes(label = round(time_hour,0)),
+            fontface = "bold",
+            color = "#000000",
+            size = 15) +
+  coord_flip() +
+  scale_y_continuous(limits = c(0, 80), 
+                     breaks = seq(0, 80, by = 10),
+                     labels = scales::number_format(suffix = " h") ) +
+  theme_fivethirtyeight() +
+  labs(title = "Median time of Ultra Marathon finishers competing in each continent",
+       caption = "**Source:** BjnNowak-Github Repo | **Figure:** @maxwelco") +
+    theme(plot.caption = element_markdown(size = 15, family = "oswald"),
+          plot.title = element_markdown(size = 45, family = "oswald"),
+          plot.title.position = "plot",
+          axis.text = element_markdown(size = 40)) -> fig1
+```
+
+
+```{r}
+fig1 +
+  geom_curve(x = 4.8, y = 32.40667, xend = 4.95, yend = 35,
+             arrow = arrow(length = unit(0.05, "inch")), 
+             size = 0.4, curvature = 0.3, color = "#333333") +
+  annotate("text", x = 5.1, y = 34, 
+           label = "Overall median time - 32.4 h", 
+           size = 12,
+           hjust = 0,
+           lineheight = 0.3,
+           color = "#C53151",
+           fontface = "italic") -> fig2
+```
+
+
+```{r}
+fig2 +
+  geom_curve(x = 1.6, y = 51, xend = 1.4, yend = 55,
+             arrow = arrow(length = unit(0.05, "inch")), 
+             size = 0.4, curvature = 0.3, color = "#333333") +
+  annotate("text", x = 1.4, y = 56, 
+           label = "Individual finisher time", 
+           size = 12,
+           hjust = 0,
+           lineheight = 0.3,
+           color = "#333333",
+           fontface = "italic") -> fig3
+```
+
+
+```{r}
+fig3 +
+  geom_curve(x = 0.85, y = 33.5, xend = 0.7, yend = 36,
+             arrow = arrow(length = unit(0.05, "inch")), 
+             size = 0.4, curvature = 0.3, color = "#333333") +
+  annotate("text", x = 0.7, y = 37, 
+           label = "Median time by continent", 
+           size = 12,
+           hjust = 0,
+           lineheight = 0.3,
+           color = "#333333",
+           fontface = "italic") -> fig4
+```
+
+
+```{r}
+fig4 +
+  geom_curve(x = 3.95, y = 34, xend = 3.7, yend = 35,
+             arrow = arrow(length = unit(0.05, "inch")), 
+             size = 0.4, curvature = 0.3, color = "#333333") +
+  annotate("text", x = 3.7, y = 36, 
+           label = "Difference", 
+           size = 12,
+           hjust = 0,
+           lineheight = 0.3,
+           color = "#333333",
+           fontface = "italic") -> fig5
+```
+
+
+```{r}
+fig5 +
+  geom_point(data = elev, mapping = aes(x = continent, y = 5),
+             shape = 17, size = 12) +
+  geom_text(data = elev, 
+            aes(x = continent, y = 5, label = elevation_gain),
+            fontface = "bold",
+            color = 2,
+            size = 10, inherit.aes = FALSE)
+
+ggsave("fig_44.png", width = 7, height = 5)
+```
+
+
+
+
+
+
+```{r}
+running1 |> 
+  group_by(continent) |> 
+  summarise(distance = median(distance, na.rm = TRUE),
+            elevation_gain = median(elevation_gain, na.rm = TRUE)) -> elev
+```
+
