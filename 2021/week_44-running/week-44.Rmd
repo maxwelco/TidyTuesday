@@ -90,7 +90,7 @@ running1 |>
                      labels = scales::number_format(suffix = " h") ) +
   theme_fivethirtyeight() +
   labs(title = "Median time of Ultra Marathon finishers competing in each continent",
-       subtitle = "It takes more time running higher elevation",
+       subtitle = "It takes more time to finish at higher elevation gain",
        caption = "**Source:** BjnNowak-Github Repo | **Figure:** @maxwelco") +
     theme(plot.caption = element_markdown(size = 15, family = "oswald"),
           plot.title = element_markdown(size = 45, family = "oswald"),
@@ -138,7 +138,7 @@ fig3 +
              arrow = arrow(length = unit(0.05, "inch")), 
              size = 0.4, curvature = 0.3, color = "#D6ED17FF") +
   annotate("text", x = 0.7, y = 37, 
-           label = "Median time by continent", 
+           label = "Median finisher time by continent", 
            size = 10,
            hjust = 0,
            lineheight = 0.3,
