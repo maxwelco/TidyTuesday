@@ -28,7 +28,6 @@ codelist |>
 ultra_rankings |> 
   left_join(race, by = "race_year_id") |> 
   left_join(continent, by = c("country" = "country.name.en")) -> running
-#  mutate(rank = if_else(is.na(rank), "Did not finish", as.character(rank))) 
 ```
 
 ```{r}
@@ -72,18 +71,18 @@ running1 |>
                    x = continent, 
                    xend = continent),
                size = 1.5,
-               color = "#333333") +
+               color = "#606060FF") +
   geom_hline(yintercept = 32.40667, 
              size = 1.5, 
-             color = "#C53151") +
+             color = "#ED0A3F") +
   geom_point(data = running2, 
              aes(y = time_hour), 
              size = 7, 
-             color = "#FFD12A") +
+             color = "#D6ED17FF") +
   geom_text(data = running2, 
             aes(label = round(time_hour,0)),
             fontface = "bold",
-            color = "#000000",
+            color = "#333333",
             size = 15) +
   coord_flip() +
   scale_y_continuous(limits = c(0, 80), 
@@ -91,9 +90,11 @@ running1 |>
                      labels = scales::number_format(suffix = " h") ) +
   theme_fivethirtyeight() +
   labs(title = "Median time of Ultra Marathon finishers competing in each continent",
+       subtitle = "It takes more time running higher elevation",
        caption = "**Source:** BjnNowak-Github Repo | **Figure:** @maxwelco") +
     theme(plot.caption = element_markdown(size = 15, family = "oswald"),
           plot.title = element_markdown(size = 45, family = "oswald"),
+          plot.subtitle = element_markdown(size = 30, family = "oswald"),
           plot.title.position = "plot",
           axis.text = element_markdown(size = 40)) -> fig1
 ```
@@ -103,13 +104,15 @@ running1 |>
 fig1 +
   geom_curve(x = 4.8, y = 32.40667, xend = 4.95, yend = 35,
              arrow = arrow(length = unit(0.05, "inch")), 
-             size = 0.4, curvature = 0.3, color = "#333333") +
+             size = 0.4, 
+             curvature = 0.3, 
+             color = "#ED0A3F") +
   annotate("text", x = 5.1, y = 34, 
            label = "Overall median time - 32.4 h", 
-           size = 12,
+           size = 10,
            hjust = 0,
            lineheight = 0.3,
-           color = "#C53151",
+           color = "#ED0A3F",
            fontface = "italic") -> fig2
 ```
 
@@ -118,13 +121,13 @@ fig1 +
 fig2 +
   geom_curve(x = 1.6, y = 51, xend = 1.4, yend = 55,
              arrow = arrow(length = unit(0.05, "inch")), 
-             size = 0.4, curvature = 0.3, color = "#333333") +
+             size = 0.4, curvature = 0.3, color = "#000000") +
   annotate("text", x = 1.4, y = 56, 
            label = "Individual finisher time", 
-           size = 12,
+           size = 10,
            hjust = 0,
            lineheight = 0.3,
-           color = "#333333",
+           color = "#000000",
            fontface = "italic") -> fig3
 ```
 
@@ -133,10 +136,10 @@ fig2 +
 fig3 +
   geom_curve(x = 0.85, y = 33.5, xend = 0.7, yend = 36,
              arrow = arrow(length = unit(0.05, "inch")), 
-             size = 0.4, curvature = 0.3, color = "#333333") +
+             size = 0.4, curvature = 0.3, color = "#D6ED17FF") +
   annotate("text", x = 0.7, y = 37, 
            label = "Median time by continent", 
-           size = 12,
+           size = 10,
            hjust = 0,
            lineheight = 0.3,
            color = "#333333",
@@ -148,26 +151,47 @@ fig3 +
 fig4 +
   geom_curve(x = 3.95, y = 34, xend = 3.7, yend = 35,
              arrow = arrow(length = unit(0.05, "inch")), 
-             size = 0.4, curvature = 0.3, color = "#333333") +
-  annotate("text", x = 3.7, y = 36, 
-           label = "Difference", 
-           size = 12,
+             size = 0.4, curvature = 0.3, color = "#606060FF") +
+  annotate("text", x = 3.6, y = 36, 
+           label = "Difference between \noverall and continent median time", 
+           size = 10,
            hjust = 0,
            lineheight = 0.3,
-           color = "#333333",
+           color = "#606060FF",
            fontface = "italic") -> fig5
 ```
-
+```{r}
+running1 |> 
+  group_by(continent) |> 
+  summarise(distance = median(distance, na.rm = TRUE),
+            elevation_gain = median(elevation_gain, na.rm = TRUE)) -> elev
+```
 
 ```{r}
 fig5 +
   geom_point(data = elev, mapping = aes(x = continent, y = 5),
-             shape = 17, size = 12) +
+             shape = 17, size = 12, color = "#C39953") +
   geom_text(data = elev, 
             aes(x = continent, y = 5, label = elevation_gain),
             fontface = "bold",
-            color = 2,
-            size = 10, inherit.aes = FALSE)
+            color = "#333333",
+            size = 10, inherit.aes = FALSE) -> fig6
+```
+
+
+```{r}
+fig6 +
+  geom_curve(x = 4.9, y = 3, xend = 4.7, yend = 3.5,
+             arrow = arrow(length = unit(0.05, "inch")), 
+             size = 0.4, curvature = 0.3, color = "#C39953") +
+  annotate("text", x = 4.6, y = 0, 
+           label = "Median elevation gain in m",
+           size = 10,
+           angle = 0,
+           hjust = 0,
+           color = "#C39953",
+           fontface = "italic")
+
 
 ggsave("fig_44.png", width = 7, height = 5)
 ```
@@ -177,10 +201,5 @@ ggsave("fig_44.png", width = 7, height = 5)
 
 
 
-```{r}
-running1 |> 
-  group_by(continent) |> 
-  summarise(distance = median(distance, na.rm = TRUE),
-            elevation_gain = median(elevation_gain, na.rm = TRUE)) -> elev
-```
+
 
