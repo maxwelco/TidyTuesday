@@ -1,0 +1,176 @@
+---
+title: "week-45"
+author: "Maxwel Coura Oliveira"
+date: "11/2/2021"
+output: html_document
+---
+
+```{r}
+# Get the Data
+
+library(spData)
+
+# note that spDataLarge needs to be installed via:
+# install.packages("spDataLarge", 
+# repos = "https://nowosad.github.io/drat/", type = "source")
+library(spDataLarge)
+library(sf)
+library(raster)
+library(tidyverse)
+library(rvest)
+```
+
+```{r}
+country_function <- function(id) {
+  
+  url <- paste0("http://weedscience.org/Summary/Country.aspx?CountryID=",id,"")
+  #id will change by each country id number
+  
+  # Read url
+  resistance <- read_html(url)
+  
+  # Extract herbicide resistance data
+  chart <- resistance %>% 
+    html_node(".rgMasterTable") %>% # selector
+    html_table(fill = TRUE) # get the table
+
+  # Tidy dataset
+  final_chart <- chart %>% 
+    janitor::row_to_names(row_number = 2) %>% # make second column header
+    janitor::clean_names() %>% # clean header
+    as_tibble() %>% # tibble is better than data.frame
+    drop_na() %>% # drop NA values
+    mutate_at(c("number", "first_year", 
+                "country_id", "resist_id"), 
+              as.integer) # make columns numbers as integer 
+  # Get final dataset
+  final_chart 
+}
+```
+
+```{r}
+country_function(id = 45) |> # usa id
+  count(state_name) |> 
+  rename(n_cases = n) -> n_cases
+```
+
+```{r}
+country_function(id = 45) |> # usa id
+  count(state_name, common_name) |> 
+  count(state_name) |> 
+  rename(n_species = n) -> species_n
+```
+
+```{r}
+country_function(id = 45) |> # usa id
+  count(state_name, site_of_action) |> 
+  count(state_name) |> 
+  rename(n_soa = n) -> soa_n
+```
+
+```{r}
+library(geofacet)
+library(ggtext)
+library(biscale)
+library(cowplot) 
+```
+
+
+```{r}
+n_cases |> 
+  left_join(species_n, by = "state_name") |> 
+  left_join(soa_n, by = "state_name") |> 
+  add_row(state_name = "Puerto Rico", n_cases = 0, n_species = 0, n_soa = 0) |> 
+  add_row(state_name = "Alaska", n_cases = 0, n_species = 0, n_soa = 0) |> 
+  add_row(state_name = "Nevada", n_cases = 0, n_species = 0, n_soa = 0) |> 
+  bi_class(x = n_cases, y = n_species, style = "quantile", dim = 3) -> dataset
+```
+
+
+```{r}
+us_state_grid1 %>% 
+  add_row(row = 7, col = 10, code = "PR", name = "Puerto Rico") -> us_state_grid1_2
+```
+
+
+
+```{r}
+dataset |> 
+  left_join(us_state_grid1_2, by = c("state_name" = "name")) -> dataset1
+```
+
+
+
+```{r}
+# Palette
+custom_pal <- bi_pal_manual(val_3_1 = "#F46D43", val_3_2 = "#D73027", val_3_3 = "#A50026",
+                            val_2_1 = "#D9EF8B", val_2_2 = "#FFFFBF",val_2_3 = "#FEE08B",
+                            val_1_1 = "#006837", val_1_2 = "#1A9850",val_1_3 = "#66BD63")
+
+
+(legend <- bi_legend(pal = custom_pal,
+                    dim = 3,
+                    xlab = "Higher number of cases",
+                    ylab = "Higher number of species",
+                    size = 8) + 
+  bi_theme() + 
+  theme(
+        rect = element_rect(fill = "grey10"),
+        panel.border = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        axis.title.x = element_text(size = 13,
+                                    color = "#F46D43"),
+        axis.title.y = element_text(size = 13,
+                                    color = "#66BD63"))
+)
+```
+
+```{r}
+dataset1 %>% 
+  ggplot() + 
+  geom_rect(aes(fill = bi_class), xmin = -1, ymin = -1, xmax = 1, ymax = 1, color = "white") +
+  geom_richtext(aes(label = code, 
+                color = ifelse(str_detect(bi_class,"1-1|1-2|3-3"), "white","black")),
+                hjust = 0.5,
+                size = 10,
+                x = 0, y = 0.5,
+                fontface = "bold",
+                fill = NA, label.colour = NA, show.legend = F) +
+  facet_geo(vars(state_name), grid = us_state_grid1_2) +
+  coord_fixed(xlim =c(-1,1), ylim = c(-1,1)) +
+  scale_color_identity() +
+  bi_scale_fill(pal = custom_pal, dim = 3 , guide = "none") +
+  theme_minimal() +
+  labs(
+    title = "Herbicide Weed Resistance in the US",
+    subtitle = "",
+    caption = "Source: WeedScience.org | Figure: @maxwelco"
+  ) +
+  theme(
+    panel.spacing = unit(-5,"points"),
+    strip.text = element_blank(),
+    plot.title = element_text(size = 50, hjust = .5, margin = margin(t = 10, b = 15),  face = "bold"),
+    plot.subtitle = element_text(size = rel(1.45),hjust = .5, margin = margin(b = 25)),
+    plot.caption = element_text(color = "black", size = rel(.95), margin = margin(t = 15, b = 10, r = 10), hjust = 1),
+    plot.margin = margin(t = 20, r = 10, b =10, l = 10), 
+    plot.background = element_rect(fill = "#F9F6EE", color = NA)
+  ) #-> map 
+
+#ggdraw() +
+#  draw_plot(map, 0, 0, 1, 1) +
+#  draw_plot(legend, 0.1, 0.8, 0.2, 0.2)
+
+ggsave("fig_45.png")
+```
+
+
+```{r}
+# Saving ------------------------------------------------------------------
+path <-  here::here("2021/week_45-maps/")
+ggsave(glue::glue("{path}.pdf"), width = 15, height = 9, device = cairo_pdf)
+
+pdftools::pdf_convert(pdf = glue::glue("{path}.pdf"), 
+                      filenames = glue::glue("{path}_twitter.png"),
+                      format = "png", dpi = 320)
+```
