@@ -158,7 +158,7 @@ dataset1 %>%
   theme_minimal() +
   labs(
     title = "Herbicide Weed Resistance in the US",
-    subtitle = "A bivariete map showing reported resistance cases vs resistant weed species",
+    subtitle = "A bivariate map showing reported resistance cases vs resistant weed species",
     caption = "**Source:** WeedScience.org | **Figure:** @maxwelco"
   ) +
   theme(
