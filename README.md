@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 45 - Map - Herbicide Weed Resistance
+
+![Map figure](2021/week_45-maps/fig_45.png)
+
 ### Week 44 - Ultra Marathon Running
 
 ![Running figure](2021/week_44-running/fig_44.png)
