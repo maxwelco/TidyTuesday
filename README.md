@@ -3,7 +3,7 @@
 My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/tidytuesday)
 
 
-## 2021 
+## 2021
 
 ### Week 45 - Map - Herbicide Weed Resistance
 
