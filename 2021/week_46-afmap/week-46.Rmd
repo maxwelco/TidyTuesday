@@ -1,0 +1,26 @@
+---
+title: "week-46"
+author: "Maxwel Coura Oliveira"
+date: "11/8/2021"
+output: html_document
+---
+
+
+
+```{r}
+#remotes::install_github("afrimapr/afrilearndata")
+#remotes::install_github("afrimapr/afrihealthsites")
+```
+
+```{r}
+library(afrilearndata)
+library(afrihealthsites)
+```
+
+```{r}
+afrilearndata::afriairports
+```
+```{r}
+afrihealthsites::afrihealthsites("Kenya")
+```
+
