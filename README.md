@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 46 - Learning with afrilearndata
+
+![Map Africa](2021/week_46-afmap/fig_46.png)
+
 ### Week 45 - Map - Herbicide Weed Resistance
 
 ![Map figure](2021/week_45-maps/fig_45.png)

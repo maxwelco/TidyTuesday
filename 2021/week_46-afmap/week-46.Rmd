@@ -9,35 +9,16 @@ output: html_document
 
 ```{r}
 #remotes::install_github("afrimapr/afrilearndata")
-#remotes::install_github("afrimapr/afrihealthsites")
 ```
 
 ```{r}
 library(afrilearndata)
-library(afrihealthsites)
 library(sf)
+library(ggspatial)
 library(tidyverse)
 library(ggtext)
 ```
 
-```{r}
-afrilearndata::afripop2020 
-```
-
-```{r}
-afrihealthsites::compare_hs_sources("Kenya")
-```
-
-```{r}
-world <- ne_countries(scale = "medium", returnclass = "sf")
-class(world)
-```
-
-```{r}
-world |> 
-  arrange(sovereignt) |> 
-  filter(region_un %in% "Africa") -> af_cont
-```
 
 ```{r}
 afrilearndata::afrihighway -> af_roads
@@ -45,36 +26,56 @@ afrilearndata::africontinent -> af
 afrilearndata::africapitals -> af_capitals
 ```
 
-  geom_text_repel(data = af_capitals,
-                  aes(x=X, y=Y, label = capitalname),
-            size = 6, 
-            seed = 165,
-            color = "beige", 
-            fontface = "bold")
+```{r}
+#library(extrafont)
+library(showtext)
+showtext_auto()
+font_add_google("Alegreya Sans SC", "alegreya") 
+```
 
 ```{r}
 af |> 
   ggplot() +
-  geom_sf(color = "gray90") +
-  geom_sf(data = af_roads, color = 2) +
-  geom_sf(data = af_capitals) +
-  coord_sf(xlim = c(-23, 60), 
+  geom_sf(color = NA, fill = "#222024") +
+  geom_sf(data = af_roads, aes(color = Name), 
+          show.legend = FALSE, size = 1.1) +
+#  geom_sf(data = af_capitals, shape = 17, color = "#FF8866") +
+  coord_sf(xlim = c(-20, 55), 
            ylim = c(-40, 40), 
            expand = FALSE) +
+  theme_bw() +
+  labs(caption = "Source: afrilearndata | Figure: @maxwelco") +
+  scale_color_viridis_d(option = "H") +
   theme(panel.background = element_rect(fill = "aliceblue"),
         legend.position = c(0.80, 0.95),
         legend.background = element_rect(fill = NA),
         legend.direction = "horizontal",
-        axis.text = element_markdown(size = 12),
+        plot.caption = element_markdown(size = 25, family = "alegreya"),
+        axis.text = element_markdown(size = 40, family = "alegreya"),
         legend.title = element_markdown(face = "bold"),
         legend.key.width = unit(2,"line")) +
   annotation_scale(location = "br", 
                    width_hint = 0.4, 
-                   text_cex = 1) + 
-  annotation_north_arrow(location = "bl", 
+                   text_cex = 3) + 
+  annotation_north_arrow(location = "tr", 
                          which_north = "true",
                          pad_x = unit(0.05, "in"),
                          pad_y = unit(0.05, "in"), 
-                         style = north_arrow_nautical)
+                         style = north_arrow_nautical(text_size = 30,
+                                                      text_family = "alegreya")) +
+  annotate(geom = "richtext", 
+           x = -3, 
+           y = -20, 
+           fill = NA, 
+           label.color = NA,
+           label = "Trans-<br>African<br> Highway<br> network", 
+           fontface = "bold", 
+           family = "alegreya",
+           lineheight = 0.3,
+           color = "#222024", 
+           size = 45, 
+           hjust = 0.5) 
+
+ggsave("fig_46.png", width = 7, height = 7)
 ```
 
