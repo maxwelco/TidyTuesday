@@ -29,7 +29,7 @@ afrilearndata::africapitals -> af_capitals
 ```{r}
 #library(extrafont)
 library(showtext)
-showtext_auto()
+showtext_auto() 
 font_add_google("Alegreya Sans SC", "alegreya") 
 ```
 
