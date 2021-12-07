@@ -1,0 +1,12 @@
+---
+title: "week-49"
+author: "Maxwel Coura Oliveira"
+date: "12/7/2021"
+output: html_document
+---
+
+
+```{r}
+matches <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-30/matches.csv')
+```
+

@@ -1,0 +1,62 @@
+---
+title: "week-47"
+author: "Maxwel Coura Oliveira"
+date: "11/27/2021"
+output: html_document
+---
+
+```{r}
+directors <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/directors.csv')
+episodes <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/episodes.csv')
+writers <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/writers.csv')
+imdb <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-11-23/imdb.csv')
+
+```
+
+
+```{r}
+library(tidyverse)
+library(ggridges)
+```
+
+
+```{r}
+imdb |> 
+  rename(episode_number =ep_num,
+         season_number = season,
+         rating_imdb = rating) -> imdb1
+```
+
+
+```{r}
+episodes |> 
+  left_join(directors, by = "story_number") |> 
+  left_join(writers, by = "story_number") |> 
+  left_join(imdb1, by = c("episode_number", "season_number")) -> dataset
+```
+
+
+
+```{r}
+dataset |> 
+  ggplot(aes(x = duration, y = uk_viewers)) +
+  geom_hex() +
+  geom_smooth(method = "lm")
+```
+
+
+```{r}
+dataset |> 
+  filter(!is.na(season_number)) |> 
+  mutate(season_number = as_factor(season_number)) |> 
+  ggplot(aes(x = uk_viewers, y = season_number, fill = stat(x))) +
+  geom_density_ridges(scale = 1)
+
+ggsave("fig_48.png", height = 9)
+```
+
+
+```{r}
+ggplot(iris, aes(x = Sepal.Length, y = Species)) + geom_density_ridges(scale = 1)
+```
+

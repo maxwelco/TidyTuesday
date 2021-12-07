@@ -1,0 +1,32 @@
+---
+title: "week-50"
+author: "Maxwel Coura Oliveira"
+date: "12/7/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(waffle)
+```
+
+
+```{r}
+spiders <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-07/spiders.csv')
+```
+
+```{r}
+spiders |> 
+  mutate(fifty = case_when(
+    year > 1750 & year <= 1800 ~ "1750s",
+    year > 1800 & year <= 1850 ~ "1800s",
+    year > 1850 & year <= 1900 ~ "1850s",
+    year > 1900 & year <= 1950 ~ "1950s",
+    year > 1950 & year <= 2000 ~ "2000s",
+  )) |> 
+  count(family, fifty) -> dt_spider
+```
+
+
+
+
