@@ -5,6 +5,10 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2021
 
+### Week 52 - Starbucks drinks
+
+![Map Africa](2021/week_52-starbucks/fig_52.png)
+
 ### Week 46 - Learning with afrilearndata
 
 ![Map Africa](2021/week_46-afmap/fig_46.png)

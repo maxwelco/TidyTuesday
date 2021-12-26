@@ -14,16 +14,12 @@ library(tidyverse)
 library(ggradar)
 library(scales)
 library(ggrepel)
+library(ggthemes)
+library(ggtext)
 ```
 
 
-```{r}
-starbucks |> 
-  ggplot(aes(x = calories, y = caffeine_mg, 
-             color = product_name,
-             size = serv_size_m_l)) +
-  geom_point(show.legend = FALSE)
-```
+
 ```{r}
 starbucks |> 
   mutate(caffeine_mgml = caffeine_mg / serv_size_m_l,
@@ -38,21 +34,76 @@ starbucks |>
 ```
 
 
+
+```{r}
+#library(extrafont)
+library(showtext)
+showtext_auto() 
+font_add_google("Rubik Mono One", "rubik") 
+font_add_google("Play", "Play") 
+font_add_google("Annie Use Your Telescope", "annie")
+```
+
+
+
 ```{r}
 starbucks1 |> 
 ggplot(aes(x = calories_kcml, y = caffeine_mgml, 
              color = product_name, label = product_name)) +
   geom_point(show.legend = FALSE) +
-  labs(y = "Caffeine (mg mL-1)", x = "Calories (Kcal mL-1)") +
-  scale_y_continuous(limits = c(0,0.9)) +
-  geom_text_repel(max.overlaps = 10,
-                  size = 2,
-                  min.segment.length = 24,
+  geom_rect(aes(xmin=0, xmax=5, ymin=0, ymax=0.5), 
+            fill = "#27251F", alpha = 0.004, color = NA) +
+  labs(y = expression(paste("Caffeine (mg mL"^"-1",")")), 
+       x = expression(paste("Calories (Kcal mL"^"-1",")")),
+       caption = "Source: Starbucks Coffee Company Beverage Nutrition Information | Figure: @maxwelco") +
+  geom_text_repel(max.overlaps = 5,
+                  size = 10,
+                  min.segment.length = 0.1,
                   point.padding = 0.4,
                   box.padding = 0.5,
-                  show.legend = FALSE)
+                  show.legend = FALSE,
+                  family = "annie") +
+  scale_color_viridis_d(option = "H") +
+  theme_minimal(base_family = "Play") +
+  annotate("richtext", 
+           x = 16, 
+           y = 0.35, 
+           label = "<img src='https://user-images.githubusercontent.com/55933131/146823691-4c19c28c-d2ef-46b5-82bc-76923f5c3256.png' width='100'/>", 
+           fill = NA,
+          size = 25, 
+          color = NA) +
+  annotate("richtext", 
+           x = 16, 
+           y = 0.6, 
+           label.color = NA,
+           label = "Starbucks drinks", 
+           face = "bold", 
+           fill = NA,
+          size = 22, 
+          color = "#00704A", 
+          family = "rubik") +
+  annotate("richtext", 
+           x = 16, 
+           y = 0.55, 
+           label.color = NA,
+           label = "Caffeine or Calories, which one you would go?", 
+           face = "bold", 
+           fill = NA,
+          size = 10, 
+          color = "#27251F") +
+  annotate("text", 
+           x = 2, 
+           y = 0.45, 
+           size = 10,
+           hjust = 0,
+           lineheight = 0.3,
+           label = "88% of drink products fall in \nthis shaded area") +
+  theme(axis.text = element_markdown(size = 30),
+        axis.title = element_markdown(size = 35),
+        plot.caption = element_markdown(size = 17, 
+                                        color = "#00704A"))
 
-ggsave("fig_52.png")
+ggsave("fig_52.png", bg = "#FAF9F6")
 ```
 
 
@@ -70,13 +121,5 @@ ggradar(starbucks_radar,
 ggsave("fig_52.png")
 ```
 
-```{r}
-mtcars_radar <- mtcars %>% 
-  as_tibble(rownames = "group") %>% 
-  mutate_at(vars(-group), rescale) %>% 
-  tail(4) %>% 
-  select(1:10)
 
-ggradar(mtcars_radar)
-```
 
