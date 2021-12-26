@@ -13,7 +13,10 @@ starbucks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/
 library(tidyverse)
 library(ggradar)
 library(scales)
+library(ggrepel)
 ```
+
+
 ```{r}
 starbucks |> 
   ggplot(aes(x = calories, y = caffeine_mg, 
@@ -25,15 +28,29 @@ starbucks |>
 starbucks |> 
   mutate(caffeine_mgml = caffeine_mg / serv_size_m_l,
          calories_kcml = calories/ caffeine_mg) |> 
-  dplyr::select(product_name, size, caffeine_mgml, calories_kcml)
+  dplyr::select(product_name, size, caffeine_mgml, calories_kcml) |> 
+  mutate_if(is_character, as_factor) |> 
   group_by(product_name) |>
-  summarise(caffeine = mean(caffeine, na.rm = TRUE),
-            calories_kml = mean(calories_kml, na.rm = TRUE)) |> 
-  ggplot(aes(x = calories_kml, y = caffeine, 
-             color = product_name)) +
+  summarise(caffeine_mgml = mean(caffeine_mgml, na.rm = TRUE),
+            calories_kcml = mean(calories_kcml, na.rm = TRUE)) |> 
+  mutate(caffeine_mgml = if_else(caffeine_mgml == Inf, 0, caffeine_mgml)) |> 
+  mutate(calories_kcml = if_else(calories_kcml == Inf, 0, calories_kcml)) -> starbucks1
+```
+
+
+```{r}
+starbucks1 |> 
+ggplot(aes(x = calories_kcml, y = caffeine_mgml, 
+             color = product_name, label = product_name)) +
   geom_point(show.legend = FALSE) +
   labs(y = "Caffeine (mg mL-1)", x = "Calories (Kcal mL-1)") +
-  scale_y_continuous(limits = c(0,1))
+  scale_y_continuous(limits = c(0,0.9)) +
+  geom_text_repel(max.overlaps = 10,
+                  size = 2,
+                  min.segment.length = 24,
+                  point.padding = 0.4,
+                  box.padding = 0.5,
+                  show.legend = FALSE)
 
 ggsave("fig_52.png")
 ```
