@@ -56,7 +56,7 @@ ggplot(aes(x = calories_kcml, y = caffeine_mgml,
   labs(y = expression(paste("Caffeine (mg mL"^"-1",")")), 
        x = expression(paste("Calories (Kcal mL"^"-1",")")),
        caption = "Source: Starbucks Coffee Company Beverage Nutrition Information | Figure: @maxwelco") +
-  geom_text_repel(max.overlaps = 5,
+  geom_text_repel(max.overlaps = 6,
                   size = 10,
                   min.segment.length = 0.1,
                   point.padding = 0.4,
