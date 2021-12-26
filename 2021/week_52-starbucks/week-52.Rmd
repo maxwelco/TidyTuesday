@@ -1,0 +1,65 @@
+---
+title: "week-52"
+author: "Maxwel Coura Oliveira"
+date: "12/26/2021"
+output: html_document
+---
+
+```{r}
+starbucks <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-12-21/starbucks.csv')
+```
+
+```{r}
+library(tidyverse)
+library(ggradar)
+library(scales)
+```
+```{r}
+starbucks |> 
+  ggplot(aes(x = calories, y = caffeine_mg, 
+             color = product_name,
+             size = serv_size_m_l)) +
+  geom_point(show.legend = FALSE)
+```
+```{r}
+starbucks |> 
+  mutate(caffeine_mgml = caffeine_mg / serv_size_m_l,
+         calories_kcml = calories/ caffeine_mg) |> 
+  dplyr::select(product_name, size, caffeine_mgml, calories_kcml)
+  group_by(product_name) |>
+  summarise(caffeine = mean(caffeine, na.rm = TRUE),
+            calories_kml = mean(calories_kml, na.rm = TRUE)) |> 
+  ggplot(aes(x = calories_kml, y = caffeine, 
+             color = product_name)) +
+  geom_point(show.legend = FALSE) +
+  labs(y = "Caffeine (mg mL-1)", x = "Calories (Kcal mL-1)") +
+  scale_y_continuous(limits = c(0,1))
+
+ggsave("fig_52.png")
+```
+
+
+```{r}
+starbucks |> 
+#    filter(product_name == contains("Expresso"))
+  mutate_at(c("fiber_g", "trans_fat_g"), as.double) |> 
+  unite("product_name_size", c(1,2), sep = " - ") |> 
+  mutate_at(vars(-product_name_size), rescale) |> 
+  select(1:4) -> starbucks_radar
+
+ggradar(starbucks_radar,
+        legend.position = "none")
+
+ggsave("fig_52.png")
+```
+
+```{r}
+mtcars_radar <- mtcars %>% 
+  as_tibble(rownames = "group") %>% 
+  mutate_at(vars(-group), rescale) %>% 
+  tail(4) %>% 
+  select(1:10)
+
+ggradar(mtcars_radar)
+```
+
