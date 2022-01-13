@@ -1,0 +1,7 @@
+---
+title: "week-2"
+author: "Maxwel Coura Oliveira"
+date: "1/13/2022"
+output: html_document
+---
+
