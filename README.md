@@ -4,7 +4,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ## 2022
 
-### Week 18 - Megawatt hour cost (US$) of <b style='color:#56B4E9;'>wind</b>, <b style='color:#E69F00;'>solar</b>, <b style='color:#000000;'>gas</b> energy in the US
+### Week 18 - Megawatt hour cost (US$) of wind, solar, gas energy in the US
 
 ![Map energy cost](2022/week_18-solar/fig_18.png)
 
