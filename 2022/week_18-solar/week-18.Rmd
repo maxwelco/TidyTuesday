@@ -1,0 +1,35 @@
+---
+title: "week-18"
+author: "Maxwel Coura Oliveira"
+date: "5/6/2022"
+output: html_document
+---
+
+```{r}
+capacity <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-03/capacity.csv')
+wind <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-03/wind.csv')
+solar <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-03/solar.csv')
+average_cost <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2022/2022-05-03/average_cost.csv')
+```
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+```
+
+```{r}
+average_cost |> 
+  pivot_longer(cols = 2:4, names_to = "type", values_to = "value_MWh") |> 
+  mutate(type = str_remove(type, "_mwh")) |> 
+  mutate(type = str_to_title(type)) -> average_cost1
+```
+
+```{r}
+average_cost1 |> 
+  ggplot(aes(x = year, y = value_MWh, color = type)) +
+  geom_point() +
+  geom_line() +
+  theme_hc() +
+  scale_y_continuous(limits = c(0, 200), labels = scales::dollar_format(prefix = "$"))
+```
+
