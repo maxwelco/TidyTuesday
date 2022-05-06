@@ -6,7 +6,7 @@ My participation on [#TidyTuesday challenge](https://github.com/rfordatascience/
 
 ### Week 18 - Average cost of energy in the US
 
-![Map energy cost](2021/week_18-solar/fig_18.png)
+![Map energy cost](2022/week_18-solar/fig_18.png)
 
 ## 2021
 
