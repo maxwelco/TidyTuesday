@@ -15,7 +15,10 @@ average_cost <- readr::read_csv('https://raw.githubusercontent.com/rfordatascien
 ```{r}
 library(tidyverse)
 library(ggthemes)
+library(lubridate)
+library(waffle)
 ```
+
 
 ```{r}
 average_cost |> 
@@ -24,12 +27,44 @@ average_cost |>
   mutate(type = str_to_title(type)) -> average_cost1
 ```
 
+
+
+
+
+
 ```{r}
 average_cost1 |> 
-  ggplot(aes(x = year, y = value_MWh, color = type)) +
-  geom_point() +
-  geom_line() +
-  theme_hc() +
-  scale_y_continuous(limits = c(0, 200), labels = scales::dollar_format(prefix = "$"))
+  mutate(value_MWh = as.integer(round(value_MWh, 0))) |> 
+  filter(year != 2021) |> 
+  ggplot(aes(fill = type, values = value_MWh)) +
+  geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) +
+  facet_wrap(~year, nrow = 1, strip.position = "bottom") +
+  labs(title = "Average cost of energy in the US", 
+       subtitle = "Solar energy cost dramatically decreased in the past decade",
+       y = "Price (US$/MWh)",
+       caption = "Source: Berkeley Lab | Figure: @maxwelco") +
+  scale_x_discrete() + 
+  scale_y_continuous(labels = function(x) x * 10, # make this multiplyer the same as n_rows
+                     expand = c(0,0)) +
+#  scale_fill_tableau(name=NULL) +
+  scale_fill_colorblind(name = NULL) +
+  theme_clean() +
+  theme(panel.grid = element_blank(), axis.ticks.y = element_line()) +
+  guides(fill = guide_legend(reverse = TRUE)) +
+  theme(legend.position = c(0.95, 0.82),
+        legend.background = element_rect(color = NA))
+
+ggsave("fig_18.png", width = 9, height = 5)
 ```
+
+
+
+
+
+
+
+
+
+
+
 
