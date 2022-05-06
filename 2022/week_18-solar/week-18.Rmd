@@ -17,6 +17,7 @@ library(tidyverse)
 library(ggthemes)
 library(lubridate)
 library(waffle)
+library(ggtext)
 ```
 
 
@@ -27,6 +28,9 @@ average_cost |>
   mutate(type = str_to_title(type)) -> average_cost1
 ```
 
+```{r}
+colorblind_pal()
+```
 
 
 
@@ -39,8 +43,8 @@ average_cost1 |>
   ggplot(aes(fill = type, values = value_MWh)) +
   geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) +
   facet_wrap(~year, nrow = 1, strip.position = "bottom") +
-  labs(title = "Average cost of energy in the US", 
-       subtitle = "Solar energy cost dramatically decreased in the past decade",
+  labs(title = "Average cost of <b style='color:#56B4E9;'>wind</b>, <b style='color:#E69F00;'>solar</b>, <b style='color:#000000;'>gas</b> energy in the US", 
+       subtitle = "<b style='color:#E69F00;'>Solar</b> energy cost dramatically decreased in the past decade",
        y = "Price (US$/MWh)",
        caption = "Source: Berkeley Lab | Figure: @maxwelco") +
   scale_x_discrete() + 
@@ -51,7 +55,9 @@ average_cost1 |>
   theme_clean() +
   theme(panel.grid = element_blank(), axis.ticks.y = element_line()) +
   guides(fill = guide_legend(reverse = TRUE)) +
-  theme(legend.position = c(0.95, 0.82),
+  theme(plot.title = element_markdown(color = "#333333"),
+        plot.subtitle = element_markdown(color = "#333333"),
+        legend.position = "none",
         legend.background = element_rect(color = NA))
 
 ggsave("fig_18.png", width = 9, height = 5)
