@@ -43,9 +43,9 @@ average_cost1 |>
   ggplot(aes(fill = type, values = value_MWh)) +
   geom_waffle(color = "white", size = .25, n_rows = 10, flip = TRUE) +
   facet_wrap(~year, nrow = 1, strip.position = "bottom") +
-  labs(title = "Average cost in US$/MWh of <b style='color:#56B4E9;'>wind</b>, <b style='color:#E69F00;'>solar</b>, <b style='color:#000000;'>gas</b> energy in the US", 
+  labs(title = "Megawatt hour cost (US$) of <b style='color:#56B4E9;'>wind</b>, <b style='color:#E69F00;'>solar</b>, <b style='color:#000000;'>gas</b> energy in the US", 
        subtitle = "<b style='color:#E69F00;'>Solar</b> energy cost dramatically decreased in the past decade",
-       y = NA,
+       y = NULL,
        caption = "Source: Berkeley Lab | Figure: @maxwelco") +
   scale_x_discrete() + 
   scale_y_continuous(labels = function(x) x * 10, # make this multiplyer the same as n_rows
